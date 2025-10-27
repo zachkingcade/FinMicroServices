@@ -7,6 +7,7 @@
   "scripts": {
     "start": "npx tsc && node dist/index.js",
     "fresh-start": "npx tsc && rm ./AccountsServiceDatabase.db && node dist/index.js",
+    "fresh-start-clear-logs": "npx tsc && rm ./AccountsServiceDatabase.db -f && rm -rf ./logs/* && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

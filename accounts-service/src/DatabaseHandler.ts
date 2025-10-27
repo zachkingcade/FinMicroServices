@@ -1,8 +1,14 @@
 import sqlite3 from 'sqlite3'
 import type { Logger } from 'winston';
 import { WLog } from './WLog.js';
+import type { AccountType } from './types/AccountType.js';
+import type { Account } from './types/Account.js';
 
 export class DatabaseHandler {
+
+    //--------------------------------------------------------------------------------
+    //Member Varibles
+    //--------------------------------------------------------------------------------
 
     //member varibles
     connectedStatus: boolean = false;
@@ -14,6 +20,11 @@ export class DatabaseHandler {
     selectAccountById: string = "SELECT * FROM chart_of_accounts where account_code = ?;";
     selectTypeALL: string = "SELECT * FROM account_types;";
     selectTypeById: string = "SELECT * FROM account_types where type_code = ?;";
+    selectTypeByDescription: string = "SELECT * FROM account_types where type_description = ?;";
+
+    //--------------------------------------------------------------------------------
+    //Class Setup
+    //--------------------------------------------------------------------------------
 
     constructor() {
         this.log = WLog.getLogger();
@@ -49,6 +60,7 @@ export class DatabaseHandler {
             account_type INTEGER NOT NULL,
             account_description TEXT NOT NULL,
             account_selectable TEXT UNIQUE NOT NULL,
+            account_active CHAR(1) NOT NULL,
             notes TEXT NULL 
             )`,
                 err => {
@@ -67,8 +79,8 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db.run(
                 `CREATE TABLE IF NOT EXISTS account_types (
-            type_code INTEGER PRIMARY KEY,
-            type_description TEXT NOT NULL,
+            type_code INTEGER PRIMARY KEY AUTOINCREMENT,
+            type_description TEXT UNIQUE NOT NULL,
             notes TEXT NULL
             )`,
                 err => {
@@ -84,13 +96,34 @@ export class DatabaseHandler {
         })
     }
 
-    async addAccount(accountDescription: string, accountType: string, notes?: string): Promise<void> {
+    //--------------------------------------------------------------------------------
+    //Adding New Records
+    //--------------------------------------------------------------------------------
+
+    async addAccount(accountDescription: string, accountType: string | number, notes?: string, accountActive?: string): Promise<void> {
+        //sanatizing input
+        if(accountActive == null){
+            accountActive = "Y";
+        } else if (accountActive != "Y" && accountActive != "N"){
+            this.log.error(`Error adding account [${accountDescription}] due to accountActive provided being [${accountActive}]. Provided Value must be "Y" or "N".`)
+            return;
+        }
+
+        accountType = await this.ValidateAccountType(accountType);
+        this.log.debug(`Account Type for new account [${accountDescription}] validation returned as [${accountType}]`)
+
+        if(accountType == -1){
+            this.log.error(`Error adding account [${accountDescription}] due to account type [${accountType}] being neither a valid type description or type code.`)
+            return;
+        }
+
         // Construct insert statement
         let newInsertStatement: string = "";
         let accountSelectable = `${accountDescription} [${accountType}]`;
         newInsertStatement += "INSERT INTO chart_of_accounts ";
-        newInsertStatement += `(account_type,account_description,account_selectable${notes ? ",notes) " : ") "}`;
-        newInsertStatement += `VALUES (${accountType},"${accountDescription}","${accountSelectable}"${notes ? `,"${notes}"` : ""});`;
+        newInsertStatement += `(account_type,account_description,account_selectable,account_active${notes ? ",notes) " : ") "}`;
+        newInsertStatement += `VALUES (${accountType},"${accountDescription}","${accountSelectable}","${accountActive}"${notes ? `,"${notes}"` : ""});`;
+        this.log.debug(`New account insert statement: [${newInsertStatement}]`);
 
         await new Promise<void>((resolve, reject) => {
             this.db.run(
@@ -109,22 +142,22 @@ export class DatabaseHandler {
 
     }
 
-    async addAccountType(typeCode: string, typeDescription: string, notes?: string): Promise<void> {
+    async addAccountType(typeDescription: string, notes?: string): Promise<void> {
         // Construct insert statement
         let newInsertStatement: string = "";
         newInsertStatement += "INSERT INTO account_types ";
-        newInsertStatement += `(type_code,type_description${notes ? ",notes) " : ") "}`;
-        newInsertStatement += `VALUES (${typeCode},"${typeDescription}"${notes ? `,"${notes}"` : ""});`;
+        newInsertStatement += `(type_description${notes ? ",notes) " : ") "}`;
+        newInsertStatement += `VALUES ("${typeDescription}"${notes ? `,"${notes}"` : ""});`;
 
         await new Promise<void>((resolve, reject) => {
             this.db.run(
                 newInsertStatement,
                 err => {
                     if (err) {
-                        this.log.error(`Error inserting Account Type with data: typeCode [${typeCode}],typeDescription [${typeDescription}],notes [${notes}]`, err.message);
+                        this.log.error(`Error inserting Account Type with data:typeDescription [${typeDescription}],notes [${notes}]`, err.message);
                         reject(err);
                     } else {
-                        this.log.info(`Account Type [${typeCode}] [${typeDescription}] added successfully!`);
+                        this.log.info(`Account Type [${typeDescription}] added successfully!`);
                         resolve();
                     }
                 }
@@ -133,7 +166,27 @@ export class DatabaseHandler {
 
     }
 
-    async getAllAccounts(): Promise<any> {
+    //--------------------------------------------------------------------------------
+    //Validation
+    //--------------------------------------------------------------------------------
+
+    async ValidateAccountType(accountType: string | number): Promise<number>{
+        if(typeof accountType === "string") {
+            let row = (await this.getTypeByDescription(accountType));
+            return row? row.type_code : -1;
+        } else if (typeof accountType === "number") {
+            let row = (await this.getTypeById(accountType));
+            return row? row.type_code : -1;
+        } else {
+            return -1;
+        }
+    }
+
+    //--------------------------------------------------------------------------------
+    //Retrieving Records
+    //--------------------------------------------------------------------------------
+
+    async getAllAccounts(): Promise<Account[]> {
         let results: any = [];
         await new Promise<void>((resolve, reject) => {
             this.db.all(this.selectAccountALL, [], (err, rows) => {
@@ -150,7 +203,7 @@ export class DatabaseHandler {
         return results;
     }
 
-    async getAllTypes(): Promise<any> {
+    async getAllTypes(): Promise<AccountType[]> {
         let results: any = [];
         await new Promise<void>((resolve, reject) => {
             this.db.all(this.selectTypeALL, [], (err, rows) => {
@@ -163,7 +216,57 @@ export class DatabaseHandler {
                 }
             });
         })
-
         return results;
     }
+
+    async getAccountById(id: number): Promise<Account> {
+        let result: any;
+        await new Promise<void>((resolve,reject) => {
+            this.db.get(this.selectAccountById,[id], (err, row) => {
+                if (err) {
+                    this.log.error(`Error retrieving account by Id [${id}] from the database `, err.message);
+                    reject(err);
+                } else {
+                    result = row;
+                    resolve();
+                }
+            })
+        })
+        return result;
+    }
+
+        async getTypeById(id: number): Promise<AccountType> {
+        let result: any;
+        await new Promise<void>((resolve,reject) => {
+            this.db.get(this.selectTypeById,[id], (err, row) => {
+                if (err) {
+                    this.log.error(`Error retrieving type by Id [${id}] from the database `, err.message);
+                    reject(err);
+                } else {
+                    console.log(row);
+                    result = row;
+                    resolve();
+                }
+            })
+        })
+        return result;
+    }
+
+        async getTypeByDescription(description: string): Promise<AccountType> {
+        let result: any;
+        await new Promise<void>((resolve,reject) => {
+            this.db.get(this.selectTypeByDescription,[description], (err, row) => {
+                if (err) {
+                    this.log.error(`Error retrieving type by description [${description}] from the database `, err.message);
+                    reject(err);
+                } else {
+                    console.log(row);
+                    result = row;
+                    resolve();
+                }
+            })
+        })
+        return result;
+    }
+
 }
