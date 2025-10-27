@@ -3,22 +3,22 @@ import sqlite3 from 'sqlite3'
 export class DatabaseHandler {
 
     //member varibles
-    connectedStatus = false;
-    db = null;
+    connectedStatus: boolean = false;
+    db!: sqlite3.Database;
 
     //stored queries
-    selectAccountALL = "SELECT * FROM chart_of_accounts;";
-    selectAccountById = "SELECT * FROM chart_of_accounts where account_code = ?;";
-    selectTypeALL = "SELECT * FROM account_types;";
-    selectTypeById = "SELECT * FROM account_types where type_code = ?;";
+    selectAccountALL: string = "SELECT * FROM chart_of_accounts;";
+    selectAccountById: string = "SELECT * FROM chart_of_accounts where account_code = ?;";
+    selectTypeALL: string = "SELECT * FROM account_types;";
+    selectTypeById: string = "SELECT * FROM account_types where type_code = ?;";
 
     constructor() {
 
     }
 
-    async startup() {
-        await new Promise((resolve, reject) => {
-            this.db = new sqlite3.Database('./mydatabase.db', async err => {
+    async startup(): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
+            this.db = new sqlite3.Database('./AccountsServiceDatabase.db', async err => {
                 if (err) {
                     console.error('Error opening database:', err.message)
                     reject(err);
@@ -33,13 +33,13 @@ export class DatabaseHandler {
         console.log('SQLite database startup complete!')
     }
 
-    checkConnectedStatus() {
+    checkConnectedStatus(): boolean {
         return this.connectedStatus;
     }
 
     //Creates the tables needed for basic operation if they have not already been created
-    async createTablesIfNotExist() {
-        await new Promise((resolve, reject) => {
+    async createTablesIfNotExist(): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
             this.db.run(
                 `CREATE TABLE IF NOT EXISTS chart_of_accounts (
             account_code INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +61,7 @@ export class DatabaseHandler {
         })
 
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             this.db.run(
                 `CREATE TABLE IF NOT EXISTS account_types (
             type_code INTEGER PRIMARY KEY,
@@ -81,16 +81,16 @@ export class DatabaseHandler {
         })
     }
 
-    async addAccount(accountDescription, accountType, notes) {
+    async addAccount(accountDescription: string, accountType: string, notes?: string): Promise<void> {
         // Construct insert statement
-        let newInsertStatement = "";
+        let newInsertStatement: string = "";
         let accountSelectable = `${accountDescription} [${accountType}]`;
         newInsertStatement += "INSERT INTO chart_of_accounts ";
         newInsertStatement += `(account_type,account_description,account_selectable${notes ? ",notes) " : ") "}`;
         newInsertStatement += `VALUES (${accountType},"${accountDescription}","${accountSelectable}"${notes ? `,"${notes}"` : ""});`;
         console.log(newInsertStatement);
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             this.db.run(
                 newInsertStatement,
                 err => {
@@ -107,14 +107,14 @@ export class DatabaseHandler {
 
     }
 
-    async addAccountType(typeCode, typeDescription, notes) {
+    async addAccountType(typeCode: string, typeDescription: string, notes?: string): Promise<void> {
         // Construct insert statement
-        let newInsertStatement = "";
+        let newInsertStatement: string = "";
         newInsertStatement += "INSERT INTO account_types ";
         newInsertStatement += `(type_code,type_description${notes ? ",notes) " : ") "}`;
         newInsertStatement += `VALUES (${typeCode},"${typeDescription}"${notes ? `,"${notes}"` : ""});`;
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             this.db.run(
                 newInsertStatement,
                 err => {
@@ -131,9 +131,9 @@ export class DatabaseHandler {
 
     }
 
-    async getAllAccounts() {
-        let results = [];
-        await new Promise((resolve, reject) => {
+    async getAllAccounts(): Promise<any> {
+        let results: any = [];
+        await new Promise<void>((resolve, reject) => {
             this.db.all(this.selectAccountALL, [], (err, rows) => {
                 if (err) {
                     console.error("Error retrieving all account records from the database ", err.message);
@@ -148,9 +148,9 @@ export class DatabaseHandler {
         return results;
     }
 
-    async getAllTypes() {
-        let results = [];
-        await new Promise((resolve, reject) => {
+    async getAllTypes(): Promise<any> {
+        let results: any = [];
+        await new Promise<void>((resolve, reject) => {
             this.db.all(this.selectTypeALL, [], (err, rows) => {
                 if (err) {
                     console.error("Error retrieving all account type records from the database ", err.message);
