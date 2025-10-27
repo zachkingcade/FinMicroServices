@@ -1,4 +1,4 @@
-# Ignore node modules
 accounts-service/node_modules/
 accounts-service/dist/
 accounts-service/AccountsServiceDatabase.db
+accounts-service/logs/

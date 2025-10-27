@@ -21,7 +21,8 @@
   "homepage": "https://github.com/zachkingcade/FinMicroServices#readme",
   "dependencies": {
     "sqlite3": "^5.1.7",
-    "winston": "^3.18.3"
+    "winston": "^3.18.3",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
