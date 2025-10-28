@@ -8,7 +8,6 @@ import type { Account } from '../types/Account.js';
 
 let db: DatabaseHandler;
 
-// Runs **once before all tests**
 test.before(async () => {
     db = new DatabaseHandler;
     await db.startup();

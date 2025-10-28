@@ -29,7 +29,10 @@ export class DatabaseHandler {
     constructor() {
         this.log = WLog.getLogger();
     }
-
+    /**
+     * Startups database handler. Connects to the database and creates tables if their not already there.
+     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data. 
+     */
     async startup(): Promise<void> {
         await new Promise<void>((resolve, reject) => {
             this.db = new sqlite3.Database('./AccountsServiceDatabase.db', async err => {
@@ -100,11 +103,19 @@ export class DatabaseHandler {
     //Adding New Records
     //--------------------------------------------------------------------------------
 
-    async addAccount(accountDescription: string, accountType: string | number, notes?: string, accountActive?: string): Promise<void> {
+    /**
+     * Adds an account to the database
+     * @param accountDescription describes the account being added
+     * @param accountType declares what type of account this will be, needs to be a valid account type from the account_types table
+     * @param [notes] misc notes that need to be noted in the table about the account
+     * @param [accountActive] Declares if the account is active or not. This defaults to 'Y'.
+     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
+     */
+    async addAccount(accountDescription: string, accountType: string | number, notes?: string, accountActive?: 'Y' | 'N'): Promise<void> {
         //sanatizing input
-        if(accountActive == null){
+        if (accountActive == null) {
             accountActive = "Y";
-        } else if (accountActive != "Y" && accountActive != "N"){
+        } else if (accountActive != "Y" && accountActive != "N") {
             this.log.error(`Error adding account [${accountDescription}] due to accountActive provided being [${accountActive}]. Provided Value must be "Y" or "N".`)
             return;
         }
@@ -112,7 +123,7 @@ export class DatabaseHandler {
         accountType = await this.ValidateAccountType(accountType);
         this.log.debug(`Account Type for new account [${accountDescription}] validation returned as [${accountType}]`)
 
-        if(accountType == -1){
+        if (accountType == -1) {
             this.log.error(`Error adding account [${accountDescription}] due to account type [${accountType}] being neither a valid type description or type code.`)
             return;
         }
@@ -144,7 +155,12 @@ export class DatabaseHandler {
         })
 
     }
-
+    /**
+     * Adds account type to the database
+     * @param typeDescription describes the new type of accounts
+     * @param [notes] Misc notes that need to be noted in the database about the account type
+     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
+     */
     async addAccountType(typeDescription: string, notes?: string): Promise<void> {
         // Construct insert statement
         let newInsertStatement: string = "";
@@ -173,13 +189,18 @@ export class DatabaseHandler {
     //Validation
     //--------------------------------------------------------------------------------
 
-    async ValidateAccountType(accountType: string | number): Promise<number>{
-        if(typeof accountType === "string") {
+    /**
+     * Validates account type by either type_code or type_description depending on which is provided
+     * @param accountType either a number (type_code) or string (type_description)
+     * @returns The type's type_code
+     */
+    async ValidateAccountType(accountType: string | number): Promise<number> {
+        if (typeof accountType === "string") {
             let row = (await this.getTypeByDescription(accountType));
-            return row? row.type_code : -1;
+            return row ? row.type_code : -1;
         } else if (typeof accountType === "number") {
             let row = (await this.getTypeById(accountType));
-            return row? row.type_code : -1;
+            return row ? row.type_code : -1;
         } else {
             return -1;
         }
@@ -188,7 +209,10 @@ export class DatabaseHandler {
     //--------------------------------------------------------------------------------
     //Retrieving Records
     //--------------------------------------------------------------------------------
-
+    /**
+     * Gets all accounts
+     * @returns all accounts 
+     */
     async getAllAccounts(): Promise<Account[]> {
         let results: any = [];
         await new Promise<void>((resolve, reject) => {
@@ -206,6 +230,10 @@ export class DatabaseHandler {
         return results;
     }
 
+    /**
+     * Gets all types
+     * @returns all types 
+     */
     async getAllTypes(): Promise<AccountType[]> {
         let results: any = [];
         await new Promise<void>((resolve, reject) => {
@@ -222,10 +250,15 @@ export class DatabaseHandler {
         return results;
     }
 
+    /**
+     * Gets account by id
+     * @param id the desired account's account_code
+     * @returns account by id 
+     */
     async getAccountById(id: number): Promise<Account> {
         let result: any;
-        await new Promise<void>((resolve,reject) => {
-            this.db.get(this.selectAccountById,[id], (err, row) => {
+        await new Promise<void>((resolve, reject) => {
+            this.db.get(this.selectAccountById, [id], (err, row) => {
                 if (err) {
                     this.log.error(`Error retrieving account by Id [${id}] from the database `, err.message);
                     reject(err);
@@ -238,10 +271,15 @@ export class DatabaseHandler {
         return result;
     }
 
-        async getTypeById(id: number): Promise<AccountType> {
+    /**
+     * Gets type by id
+     * @param id account type's type_code
+     * @returns type by id 
+     */
+    async getTypeById(id: number): Promise<AccountType> {
         let result: any;
-        await new Promise<void>((resolve,reject) => {
-            this.db.get(this.selectTypeById,[id], (err, row) => {
+        await new Promise<void>((resolve, reject) => {
+            this.db.get(this.selectTypeById, [id], (err, row) => {
                 if (err) {
                     this.log.error(`Error retrieving type by Id [${id}] from the database `, err.message);
                     reject(err);
@@ -255,10 +293,15 @@ export class DatabaseHandler {
         return result;
     }
 
-        async getTypeByDescription(description: string): Promise<AccountType> {
+    /**
+     * Gets type by description
+     * @param description account type's type_description
+     * @returns type by description 
+     */
+    async getTypeByDescription(description: string): Promise<AccountType> {
         let result: any;
-        await new Promise<void>((resolve,reject) => {
-            this.db.get(this.selectTypeByDescription,[description], (err, row) => {
+        await new Promise<void>((resolve, reject) => {
+            this.db.get(this.selectTypeByDescription, [description], (err, row) => {
                 if (err) {
                     this.log.error(`Error retrieving type by description [${description}] from the database `, err.message);
                     reject(err);
