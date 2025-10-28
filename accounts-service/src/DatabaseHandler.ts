@@ -117,9 +117,12 @@ export class DatabaseHandler {
             return;
         }
 
+        // Get account type description
+        let typeDescription = (await this.getTypeById(accountType)).type_description;
+
         // Construct insert statement
         let newInsertStatement: string = "";
-        let accountSelectable = `${accountDescription} [${accountType}]`;
+        let accountSelectable = `${accountDescription} [${typeDescription}]`;
         newInsertStatement += "INSERT INTO chart_of_accounts ";
         newInsertStatement += `(account_type,account_description,account_selectable,account_active${notes ? ",notes) " : ") "}`;
         newInsertStatement += `VALUES (${accountType},"${accountDescription}","${accountSelectable}","${accountActive}"${notes ? `,"${notes}"` : ""});`;
