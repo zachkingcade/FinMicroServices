@@ -1,0 +1,27 @@
+{
+  "name": "transactions-service",
+  "version": "1.0.0",
+  "description": "This service handles managing accounting transactions",
+  "main": "index.ts",
+  "scripts": {
+    "start": "npx tsc && node dist/index.js",
+    "fresh-start": "npx tsc && rm ./AccountsServiceDatabase.db && node dist/index.js",
+    "fresh-start-clear-logs": "npx tsc && rm ./AccountsServiceDatabase.db -f && rm -rf ./logs/* && node dist/index.js",
+    "test": "rm ./AccountsServiceDatabase.db -f && npx node --loader ts-node/esm --test --test-reporter=spec \"src/**/*.spec.ts\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zachkingcade/FinMicroServices.git"
+  },
+  "author": "Zachary Kingcade",
+  "license": "GNU GENERAL PUBLIC LICENSE",
+  "bugs": {
+    "url": "https://github.com/zachkingcade/FinMicroServices/issues"
+  },
+  "homepage": "https://github.com/zachkingcade/FinMicroServices#readme",
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

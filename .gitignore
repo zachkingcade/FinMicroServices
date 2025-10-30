@@ -1,4 +1,11 @@
+# Accounts Service
 accounts-service/node_modules/
 accounts-service/dist/
 accounts-service/AccountsServiceDatabase.db
 accounts-service/logs/
+
+# Transaction Service
+transactions-service/node_modules/
+transactions-service/dist/
+transactions-service/TransactionsServiceDatabase.db
+transactions-service/logs/
