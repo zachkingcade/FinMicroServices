@@ -41,19 +41,20 @@ async setupAccountQueue() {
 
       let messageObject: Message;
       try {
-        this.log.info(messageString)
         messageObject = JSON.parse(messageString) as Message;
-        this.log.info(messageObject)
       } catch (err) {
         this.log.error(`Error Parsing message [${messageString}], is not of proper type Message. [${err}]`);
         throw new Error(`Error Parsing message [${messageString}], is not of proper type Message. [${err}]`);
       }
+      this.log.info(`Message for command [${messageObject.commandKey}] parsed!`)
 
       if (messageObject.returnQueue == "Accounts-Queue") {
         this.log.error(`Error consumed message [${messageString}] has a return queue matching the queue being consumed from`);
         throw new Error(`Error consumed message [${messageString}] has a return queue matching the queue being consumed from`);
       }
+      this.log.info(`Message for command [${messageObject.commandKey}] has acceptable return queue [${messageObject.returnQueue}]!`);
 
+      this.log.info(`Processing Message for command [${messageObject.commandKey}]`);
       switch (messageObject.commandKey) {
         case "Add-Account-Type": {
           let newAccountType = JSON.parse(messageObject.data) as AccountTypeDTO

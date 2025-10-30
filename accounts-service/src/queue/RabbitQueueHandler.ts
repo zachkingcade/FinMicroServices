@@ -88,6 +88,8 @@ export class RabbitQueueHandler implements AbstractQueueMessageHandler {
             await channel.consume(queueName, async (message: any) => {
                 if (!message) return; // In case of cancellation
 
+                this.log.info(`Message Recieved from queue [${queueName}]. Message reads:\n [${message.content.toString()}]`)
+
                 try {
                     //process using provided callback
                     await callback(message.content.toString());
