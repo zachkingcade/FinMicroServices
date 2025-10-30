@@ -5,9 +5,9 @@
   "main": "index.ts",
   "scripts": {
     "start": "npx tsc && node dist/index.js",
-    "fresh-start": "npx tsc && rm ./AccountsServiceDatabase.db && node dist/index.js",
-    "fresh-start-clear-logs": "npx tsc && rm ./AccountsServiceDatabase.db -f && rm -rf ./logs/* && node dist/index.js",
-    "test": "rm ./AccountsServiceDatabase.db -f && npx node --loader ts-node/esm --test --test-reporter=spec \"src/**/*.spec.ts\""
+    "fresh-start": "npx tsc && rm ./TransactionsServiceDatabase.db && node dist/index.js",
+    "fresh-start-clear-logs": "npx tsc && rm ./TransactionsServiceDatabase.db -f && rm -rf ./logs/* && node dist/index.js",
+    "test": "rm ./TransactionsServiceDatabase.db -f && npx node --loader ts-node/esm --test --test-reporter=spec \"src/**/*.spec.ts\""
   },
   "repository": {
     "type": "git",
@@ -21,10 +21,12 @@
   "homepage": "https://github.com/zachkingcade/FinMicroServices#readme",
   "devDependencies": {
     "@types/node": "^24.9.2",
+    "@types/sqlite3": "^5.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "sqlite3": "^5.1.7",
     "winston": "^3.18.3",
     "winston-daily-rotate-file": "^5.0.0"
   }
