@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/zachkingcade/FinMicroServices#readme",
   "dependencies": {
+    "amqp-connection-manager": "^5.0.0",
+    "amqplib": "^0.10.9",
     "sqlite3": "^5.1.7",
     "winston": "^3.18.3",
     "winston-daily-rotate-file": "^5.0.0"

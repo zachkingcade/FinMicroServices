@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert, { Assert } from 'node:assert'
-import { DatabaseHandler } from '../DatabaseHandler.js';
+import { DatabaseHandler } from '../database/DatabaseHandler.js';
 import type { AccountType } from '../types/AccountType.js';
 import type { Account } from '../types/Account.js';
 

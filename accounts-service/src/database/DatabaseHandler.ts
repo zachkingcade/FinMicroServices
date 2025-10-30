@@ -1,8 +1,8 @@
 import sqlite3 from 'sqlite3'
 import type { Logger } from 'winston';
-import { WLog } from './WLog.js';
-import type { AccountType } from './types/AccountType.js';
-import type { Account } from './types/Account.js';
+import { WLog } from '../WLog.js';
+import type { AccountType } from '../types/AccountType.js';
+import type { Account } from '../types/Account.js';
 
 export class DatabaseHandler {
 
