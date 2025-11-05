@@ -1,6 +1,7 @@
 import { RabbitQueueHandler } from "./src/queue/RabbitQueueHandler.js";
 import { QueueConsumerService } from "./src/queue/QueueConsumerService.js";
 import { WLog } from "./src/WLog.js";
+import { ExpressHandler } from "./src/http/ExpressHandler.js";
 
 async function main() {
     const startupStartTime = performance.now();
@@ -19,14 +20,13 @@ async function main() {
     headerString += "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n\n"
     log.info(headerString);
 
-    let queue = await QueueConsumerService.getInstance(RabbitQueueHandler);
-    log.info("RabbitMQ Handler started");
+    let express = await ExpressHandler.getInstance();
+    log.info("Express Handler started");
 
-    await queue.setupAccountQueue();
-    log.info("Accounts-Queue setup within the RabbitMQ Handler");
+    // await queue.setupAccountQueue();
+    // log.info("Accounts-Queue setup within the RabbitMQ Handler");
 
     const startupTimeMs = (performance.now() - startupStartTime).toFixed(2);
-    log.info("Service Started and Listening on queue [Accounts-Queue]");
     console.log(`Accounts Service started in ${startupTimeMs} milliseconds...`);
 }
 
