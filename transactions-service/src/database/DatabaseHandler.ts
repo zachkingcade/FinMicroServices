@@ -51,40 +51,20 @@ export class DatabaseHandler {
     async createTablesIfNotExist(): Promise<void> {
         await new Promise<void>((resolve, reject) => {
             this.db.run(
-                `CREATE TABLE IF NOT EXISTS chart_of_accounts (
-            account_code INTEGER PRIMARY KEY AUTOINCREMENT,
-            account_type INTEGER NOT NULL,
-            account_description TEXT NOT NULL,
-            account_selectable TEXT UNIQUE NOT NULL,
-            account_active CHAR(1) NOT NULL,
+                `CREATE TABLE IF NOT EXISTS ledger_transactions (
+            trans_code INTEGER PRIMARY KEY AUTOINCREMENT,
+            trans_date DATE NOT NULL,
+            trans_description TEXT NOT NULL,
+            credit_account INTEGER NOT NULL,
+            debit_account INTEGER NOT NULL,
             notes TEXT NULL 
             )`,
                 err => {
                     if (err) {
-                        this.log.error('Error creating chart_of_accounts:', err.message);
+                        this.log.error('Error creating ledger_transactions:', err.message);
                         reject(err);
                     } else {
-                        this.log.info('Chart_of_accounts table created or already exists.')
-                        resolve();
-                    }
-                }
-            );
-        })
-
-
-        await new Promise<void>((resolve, reject) => {
-            this.db.run(
-                `CREATE TABLE IF NOT EXISTS account_types (
-            type_code INTEGER PRIMARY KEY AUTOINCREMENT,
-            type_description TEXT UNIQUE NOT NULL,
-            notes TEXT NULL
-            )`,
-                err => {
-                    if (err) {
-                        this.log.error('Error creating account_types:', err.message);
-                        reject(err);
-                    } else {
-                        this.log.info('account_types table created or already exists.');
+                        this.log.info('ledger_transactions table created or already exists.')
                         resolve();
                     }
                 }
@@ -96,9 +76,62 @@ export class DatabaseHandler {
     //Adding New Records
     //--------------------------------------------------------------------------------
 
+    async addAccountType(trans_date: string, trans_description: string, credit_account: number, debit_account: number, notes?: string): Promise<void> {
+        // Construct insert statement
+        let newInsertStatement: string = "";
+        newInsertStatement += "INSERT INTO ledger_transactions ";
+        newInsertStatement += `(trans_date,trans_description,credit_account,debit_account${notes ? ",notes) " : ") "}`;
+        newInsertStatement += `VALUES ("${trans_date}","${trans_description}",${credit_account},${debit_account}${notes ? `,"${notes}"` : ""});`;
+
+        try {
+            await this.validateAccount(credit_account);
+            await this.validateAccount(debit_account);
+        } catch (error) {
+            throw new Error(`Unable to add transaction with data: trans_date [${trans_date}], trans_description[${trans_description}], credit_account [${credit_account}], debit_account [${debit_account}],notes [${notes}]. Invalid account found: ${error}`)
+        }
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                newInsertStatement,
+                err => {
+                    if (err) {
+                        this.log.error(`Error inserting transaction with data: trans_date [${trans_date}], trans_description[${trans_description}], credit_account [${credit_account}], debit_account [${debit_account}],notes [${notes}]`, err.message);
+                        reject(err);
+                    } else {
+                        this.log.info(`Transaction [${trans_description}][${credit_account}][${debit_account}] added successfully!`);
+                        resolve();
+                    }
+                }
+            )
+        })
+
+    }
+
     //--------------------------------------------------------------------------------
     //Validation
     //--------------------------------------------------------------------------------
+
+    async validateAccount(account_code: number): Promise<boolean> {
+        try {
+            let response: Response = await fetch(`http://localhost:3001/account/getbyid/${account_code}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: [${response.status}]`);
+            }
+
+            let data = await response.json();
+            this.log.info(`Validating account [${account_code}] returned data [${data}]`);
+
+            return !(Object.keys(data).length === 0);
+        } catch (error) {
+            throw new Error(`Unable to validate account with account_code [${account_code}]. error: ${error}`);
+        }
+    }
 
     //--------------------------------------------------------------------------------
     //Retrieving Records
