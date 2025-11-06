@@ -3,6 +3,7 @@ import type { Logger } from 'winston';
 import { WLog } from '../WLog.js';
 import type { AccountType } from '../types/AccountType.js';
 import type { Account } from '../types/Account.js';
+import { TypeClass } from '../types/TypeClass.js';
 
 export class DatabaseHandler {
 
@@ -18,9 +19,12 @@ export class DatabaseHandler {
     //stored queries
     selectAccountALL: string = "SELECT * FROM chart_of_accounts;";
     selectAccountById: string = "SELECT * FROM chart_of_accounts where account_code = ?;";
+
     selectTypeALL: string = "SELECT * FROM account_types;";
     selectTypeById: string = "SELECT * FROM account_types where type_code = ?;";
     selectTypeByDescription: string = "SELECT * FROM account_types where type_description = ?;";
+
+    selectTypeClassAll: string = "SELECT * FROM type_classes;";
 
     //--------------------------------------------------------------------------------
     //Class Setup
@@ -84,6 +88,7 @@ export class DatabaseHandler {
                 `CREATE TABLE IF NOT EXISTS account_types (
             type_code INTEGER PRIMARY KEY AUTOINCREMENT,
             type_description TEXT UNIQUE NOT NULL,
+            type_class INTEGER NOT NULL,
             notes TEXT NULL
             )`,
                 err => {
@@ -96,6 +101,43 @@ export class DatabaseHandler {
                     }
                 }
             );
+        })
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                `CREATE TABLE IF NOT EXISTS type_classes (
+            class_code INTEGER PRIMARY KEY AUTOINCREMENT,
+            class_description TEXT UNIQUE NOT NULL
+            )`,
+                err => {
+                    if (err) {
+                        this.log.error('Error creating type_classes:', err.message);
+                        reject(err);
+                    } else {
+                        this.log.info('type_classes table created or already exists.');
+                        resolve();
+                    }
+                }
+            );
+        })
+
+        await new Promise<void>(async (resolve, reject) => {
+            //check if data as been seeded
+            try {
+                let results = await this.getAllTypeClasses();
+
+                if (results.length) {
+                    resolve();
+                } else {
+                    await this.addTypeClass("Short Term Asset");
+                    await this.addTypeClass("Long Term Asset");
+                    await this.addTypeClass("Short Term Liability");
+                    await this.addTypeClass("Long Term Liability");
+                    resolve();
+                }
+            } catch (error) {
+                reject(`Error encountered checking type class for seeded data: ${error}`);
+            }
         })
     }
 
@@ -163,12 +205,12 @@ export class DatabaseHandler {
      * @param [notes] Misc notes that need to be noted in the database about the account type
      * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
      */
-    async addAccountType(typeDescription: string, notes?: string): Promise<void> {
+    async addAccountType(typeDescription: string, typeClass: number, notes?: string): Promise<void> {
         // Construct insert statement
         let newInsertStatement: string = "";
         newInsertStatement += "INSERT INTO account_types ";
-        newInsertStatement += `(type_description${notes ? ",notes) " : ") "}`;
-        newInsertStatement += `VALUES ("${typeDescription}"${notes ? `,"${notes}"` : ""});`;
+        newInsertStatement += `(type_description,type_class${notes ? ",notes) " : ") "}`;
+        newInsertStatement += `VALUES ("${typeDescription}","${typeClass}"${notes ? `,"${notes}"` : ""});`;
 
         await new Promise<void>((resolve, reject) => {
             this.db.run(
@@ -185,6 +227,34 @@ export class DatabaseHandler {
             )
         })
 
+    }
+
+    /**
+ * Adds account class to the database. This method is private and meant to only be used for seeding data.
+ * @param typeDescription describes the new type account class
+ * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
+ */
+    private async addTypeClass(classDescription: string): Promise<void> {
+        // Construct insert statement
+        let newInsertStatement: string = "";
+        newInsertStatement += "INSERT INTO type_classes ";
+        newInsertStatement += `(class_description)`;
+        newInsertStatement += `VALUES ("${classDescription}");`;
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                newInsertStatement,
+                err => {
+                    if (err) {
+                        this.log.error(`Error inserting Type class with data:classDescription [${classDescription}]`, err.message);
+                        reject(err);
+                    } else {
+                        this.log.info(`Type Class [${classDescription}] added successfully!`);
+                        resolve();
+                    }
+                }
+            )
+        })
     }
 
     //--------------------------------------------------------------------------------
@@ -240,6 +310,26 @@ export class DatabaseHandler {
         let results: any = [];
         await new Promise<void>((resolve, reject) => {
             this.db.all(this.selectTypeALL, [], (err, rows) => {
+                if (err) {
+                    this.log.error("Error retrieving all account type records from the database ", err.message);
+                    reject(err);
+                } else {
+                    results = rows;
+                    resolve();
+                }
+            });
+        })
+        return results;
+    }
+
+    /**
+ * Gets all type classes
+ * @returns all type classes
+ */
+    async getAllTypeClasses(): Promise<TypeClass[]> {
+        let results: any = [];
+        await new Promise<void>((resolve, reject) => {
+            this.db.all(this.selectTypeClassAll, [], (err, rows) => {
                 if (err) {
                     this.log.error("Error retrieving all account type records from the database ", err.message);
                     reject(err);

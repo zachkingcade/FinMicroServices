@@ -58,7 +58,7 @@ async setupAccountQueue() {
       switch (messageObject.commandKey) {
         case "Add-Account-Type": {
           let newAccountType = JSON.parse(messageObject.data) as AccountTypeDTO
-          this.database.addAccountType(newAccountType.type_description, newAccountType.notes);
+          this.database.addAccountType(newAccountType.type_description, newAccountType.type_class, newAccountType.notes);
 
           if (messageObject.returnQueue.toLowerCase() != "none") {
             let newMessage = this.constructMessage("Confirm-Add-Account-Type", "Success", "None");

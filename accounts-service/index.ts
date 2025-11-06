@@ -1,5 +1,3 @@
-import { RabbitQueueHandler } from "./src/queue/RabbitQueueHandler.js";
-import { QueueConsumerService } from "./src/queue/QueueConsumerService.js";
 import { WLog } from "./src/WLog.js";
 import { ExpressHandler } from "./src/http/ExpressHandler.js";
 
