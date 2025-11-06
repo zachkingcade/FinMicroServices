@@ -117,7 +117,7 @@ export class DatabaseHandler {
             accountActive = "Y";
         } else if (accountActive != "Y" && accountActive != "N") {
             this.log.error(`Error adding account [${accountDescription}] due to accountActive provided being [${accountActive}]. Provided Value must be "Y" or "N".`)
-            return;
+            throw Error(`Error adding account [${accountDescription}] due to accountActive provided being [${accountActive}]. Provided Value must be "Y" or "N".`)
         }
 
         accountType = await this.ValidateAccountType(accountType);
@@ -125,7 +125,7 @@ export class DatabaseHandler {
 
         if (accountType == -1) {
             this.log.error(`Error adding account [${accountDescription}] due to account type [${accountType}] being neither a valid type description or type code.`)
-            return;
+            throw Error(`Error adding account [${accountDescription}] due to account type [${accountType}] being neither a valid type description or type code.`)
         }
 
         // Get account type description
@@ -155,6 +155,8 @@ export class DatabaseHandler {
         })
 
     }
+
+
     /**
      * Adds account type to the database
      * @param typeDescription describes the new type of accounts
