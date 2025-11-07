@@ -1,6 +1,7 @@
 import sqlite3 from 'sqlite3'
 import type { Logger } from 'winston';
 import { WLog } from '../WLog.js';
+import { Transaction } from '../types/Transaction.js';
 
 export class DatabaseHandler {
 
@@ -14,6 +15,8 @@ export class DatabaseHandler {
     log: Logger;
 
     //stored queries
+    selectTransactionsAll: string = "SELECT * FROM ledger_transactions;";
+    selectTransactionsByAffectingAccounts: string = "SELECT * FROM ledger_transactions where credit_account = ? or debit_account = ?;";
 
     //--------------------------------------------------------------------------------
     //Class Setup
@@ -55,6 +58,7 @@ export class DatabaseHandler {
             trans_code INTEGER PRIMARY KEY AUTOINCREMENT,
             trans_date DATE NOT NULL,
             trans_description TEXT NOT NULL,
+            amount DECIMAL(10, 2),
             credit_account INTEGER NOT NULL,
             debit_account INTEGER NOT NULL,
             notes TEXT NULL 
@@ -76,12 +80,14 @@ export class DatabaseHandler {
     //Adding New Records
     //--------------------------------------------------------------------------------
 
-    async addAccountType(trans_date: string, trans_description: string, credit_account: number, debit_account: number, notes?: string): Promise<void> {
+    //Note trans_date is exspected in YYYY-MM-DD format
+    //TODO check for negative amounts
+    async addTransaction(trans_date: string, trans_description: string, amount: number, credit_account: number, debit_account: number, notes?: string): Promise<void> {
         // Construct insert statement
         let newInsertStatement: string = "";
         newInsertStatement += "INSERT INTO ledger_transactions ";
-        newInsertStatement += `(trans_date,trans_description,credit_account,debit_account${notes ? ",notes) " : ") "}`;
-        newInsertStatement += `VALUES ("${trans_date}","${trans_description}",${credit_account},${debit_account}${notes ? `,"${notes}"` : ""});`;
+        newInsertStatement += `(trans_date,trans_description,amount,credit_account,debit_account${notes ? ",notes) " : ") "}`;
+        newInsertStatement += `VALUES (CAST('${trans_date}' AS DATE),"${trans_description}","${Math.abs(amount)}",${credit_account},${debit_account}${notes ? `,"${notes}"` : ""});`;
 
         try {
             await this.validateAccount(credit_account);
@@ -136,5 +142,45 @@ export class DatabaseHandler {
     //--------------------------------------------------------------------------------
     //Retrieving Records
     //--------------------------------------------------------------------------------
+
+    /**
+     * Gets all transactions from the database
+     * @returns all transactions
+     */
+    async getAllTransactions(): Promise<Transaction[]> {
+        let results: any = [];
+        await new Promise<void>((resolve, reject) => {
+            this.db.all(this.selectTransactionsAll, [], (err, rows) => {
+                if (err) {
+                    this.log.error(`Error retrieving all transaction records from the database ${err.message}`);
+                    reject(err);
+                } else {
+                    results = rows;
+                    resolve();
+                }
+            });
+        })
+        return results;
+    }
+
+    /**
+     * Gets all transactions from the database where the credit or debit matches the provided account_code
+     * @returns all transactions where the credit or debit matches the provided account_code
+     */
+    async getAllTransactionsByAffectingAccount(account_code: number): Promise<Transaction[]> {
+        let results: any = [];
+        await new Promise<void>((resolve, reject) => {
+            this.db.all(this.selectTransactionsByAffectingAccounts, [account_code,account_code], (err, rows) => {
+                if (err) {
+                    this.log.error(`Error retrieving all transaction records from the database that have account ${account_code}`, err.message);
+                    reject(err);
+                } else {
+                    results = rows;
+                    resolve();
+                }
+            });
+        })
+        return results;
+    }
 
 }

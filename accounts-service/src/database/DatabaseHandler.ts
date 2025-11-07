@@ -323,9 +323,9 @@ export class DatabaseHandler {
     }
 
     /**
- * Gets all type classes
- * @returns all type classes
- */
+     * Gets all type classes
+     * @returns all type classes
+     */
     async getAllTypeClasses(): Promise<TypeClass[]> {
         let results: any = [];
         await new Promise<void>((resolve, reject) => {
