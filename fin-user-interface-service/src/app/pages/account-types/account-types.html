@@ -1,1 +1,26 @@
-<p>account-types works!</p>
+<app-nav-bar></app-nav-bar>
+
+<div id="accountTypesDiv">
+    <table id="accountsTypeTable">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Equation Section</th>
+                <th>Description</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (item of this.accountsTypeList; track item.type_code) {
+            <tr>
+                <td class="columnSimpleOneLine">{{item.type_code}}</td>
+                <td class="columnSimpleOneLine">{{item.type_class}}</td>
+                <td class="columnSimpleOneLine">{{item.type_description}}</td>
+                <td class="columnTakeExtraSpace">{{item.notes? item.notes : "-"}}</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+

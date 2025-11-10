@@ -4,7 +4,6 @@
     <table id="ledgerTable">
         <thead>
             <tr>
-                <!-- Dynamically create headers from the first item's keys -->
                 <th>Code</th>
                 <th>Date</th>
                 <th>Description</th>
@@ -17,15 +16,67 @@
         <tbody>
             @for (item of this.transactionList; track item.trans_code) {
             <tr>
-                <td>{{item.trans_code}}</td>
-                <td>{{item.trans_date}}</td>
-                <td>{{item.trans_description}}</td>
-                <td class="amountCells">{{(item.amount).toFixed(2)}}</td>
-                <td>{{item.credit_account}}</td>
-                <td>{{item.debit_account}}</td>
-                <td>{{item.notes? item.notes : ""}}</td>
+                <td class="columnSimpleOneLine">{{item.trans_code}}</td>
+                <td class="columnSimpleOneLine">{{item.trans_date}}</td>
+                <td class="columnSimpleOneLine">{{item.trans_description}}</td>
+                <td class="amountCells columnSimpleOneLine">{{(item.amount).toFixed(2)}}</td>
+                <td class="columnSimpleOneLine">{{item.credit_account}}</td>
+                <td class="columnSimpleOneLine">{{item.debit_account}}</td>
+                <td class="columnTakeExtraSpace">{{item.notes? item.notes : "-"}}</td>
             </tr>
             }
+        </tbody>
+    </table>
+</div>
+
+<div id="manualInputLedger">
+    <!-- <div>
+        <label for="transactionDate">Date:</label> <br>
+        <input type="date" id="transactionDate" name="transactionDate">
+    </div>
+    <div>
+        <label for="transactionDescription">Transaction Description</label>
+        <input type="text" id="transactionDescription" name="transactionDescription">
+    </div>
+    <div>
+        <label for="transactionAmount">Transaction Amount</label>
+        <input type="number" id="transactionAmount" name="transactionAmount">
+    </div> -->
+
+    <table id="ledgerTable">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th id="amountHeaderCell">Amount</th>
+                <th>Credit</th>
+                <th>Debit</th>
+                <th>Notes</th>
+                <th>Done?</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="date" id="transactionDate" #inputDate></td>
+                <td><input type="text" id="transactionDescription" #inputDescription></td>
+                <td class="amountCells"><input type="number" id="transactionAmount" #inputAmount></td>
+                <td class="selector">
+                    <mtx-select placeholder="Type to search" #creditSelection>
+                        @for (item of this.accountsList; track item.account_code) {
+                        <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
+                        }
+                    </mtx-select>
+                </td>
+                <td class="selector">
+                    <mtx-select placeholder="Type to search" #debitSelection>
+                        @for (item of this.accountsList; track item.account_code) {
+                        <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
+                        }
+                    </mtx-select>
+                </td>
+                <td><input type="text" id="transactionNotes" #inputNotes></td>
+                <td><button (click)="submitNewTransaction()">Submit</button></td>
+            </tr>
         </tbody>
     </table>
 </div>

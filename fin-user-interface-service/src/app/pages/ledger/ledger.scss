@@ -47,3 +47,21 @@ td {
 .amountCells #amountHeaderCell {
     text-align: right;
 }
+
+#manualInputLedger {
+    position: relative;
+    background-color: greenyellow;
+    height: 12vh;
+    width: calc(100vw - 20rem);
+    left: 10rem;
+    z-index: 1;
+    border-width: 3px;
+    border-color: black;
+    border-style: solid;
+}
+
+#manualInputLedger {
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+

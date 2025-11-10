@@ -1,1 +1,26 @@
-<p>accounts works!</p>
+<app-nav-bar></app-nav-bar>
+
+<div id="accountsDiv">
+    <table id="accountsTable">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Account Type</th>
+                <th>Active</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (item of this.accountsList; track item.account_code) {
+            <tr>
+                <td class="columnSimpleOneLine">{{item.account_code}}</td>
+                <td class="columnSimpleOneLine">{{item.account_description}}</td>
+                <td class="columnSimpleOneLine">{{item.account_type}}</td>
+                <td class="columnSimpleOneLine">{{item.account_active}}</td>
+                <td class="columnTakeExtraSpace">{{item.notes? item.notes : "-"}}</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>

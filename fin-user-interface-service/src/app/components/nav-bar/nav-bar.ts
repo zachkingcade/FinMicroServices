@@ -16,7 +16,7 @@ const icons = {
 
 @Component({
   selector: 'app-nav-bar',
-  imports: [FeatherModule, RouterLink, RouterOutlet],
+  imports: [FeatherModule, RouterLink],
   templateUrl: './nav-bar.html',
   styleUrl: './nav-bar.scss',
 })

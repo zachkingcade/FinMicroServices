@@ -49,7 +49,7 @@ export class ExpressHandler {
   }
 
   setupPosts() {
-    this.app.post('/account/add/', async (req, res) => {
+    this.app.post('/account/add', async (req, res) => {
       try {
         let newAccount: AccountDTO = req.body
         this.log.info(`Recieved command: /account/add/ with data ${newAccount}`);
@@ -61,7 +61,7 @@ export class ExpressHandler {
       }
     })
 
-    this.app.post('/type/add/', async (req, res) => {
+    this.app.post('/type/add', async (req, res) => {
       try {
         let newAccountType: AccountTypeDTO = req.body
         this.log.info(`Recieved command: /type/add/ with data ${newAccountType}`);

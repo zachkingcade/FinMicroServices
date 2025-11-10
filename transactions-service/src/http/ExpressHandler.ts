@@ -48,7 +48,7 @@ export class ExpressHandler {
   }
 
   setupPosts() {
-    this.app.post('/transaction/add/', async (req, res) => {
+    this.app.post('/transaction/add', async (req, res) => {
       try {
         let newTransaction: Transaction = req.body
         this.log.info(`Recieved command: /account/add/ with data ${newTransaction}`);
@@ -62,7 +62,7 @@ export class ExpressHandler {
   }
 
   setupGets() {
-    this.app.get('/transaction/getall/', async (req, res) => {
+    this.app.get('/transaction/getall', async (req, res) => {
       try {
         let results: Transaction[] = await this.database.getAllTransactions();
         res.json(results)

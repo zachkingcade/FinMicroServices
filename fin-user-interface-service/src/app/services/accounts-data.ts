@@ -1,22 +1,31 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AccountType } from '../types/AccountType';
+import { Account } from '../types/Account';
+import { TypeClass } from '../types/TypeClass';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AccountsData {
-  private apiUrl = 'http://localhost:3002'; // Replace with your API URL
 
   constructor(private http: HttpClient) { }
 
-  getData(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  typesClassGetAll(): Observable<TypeClass[]> {
+    return this.http.get<TypeClass[]>(`/type/class/getall`);
   }
 
-  postData(data: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl, data);
+  accountTypesGetAll(): Observable<AccountType[]> {
+    return this.http.get<AccountType[]>(`/type/getall`);
   }
 
-  // Add other methods for PUT, DELETE, etc. as needed
+  accountsGetAll(): Observable<Account[]> {
+    return this.http.get<Account[]>(`/account/getall`);
+  }
+
+  // postData(data: any): Observable<any> {
+  //   return this.http.post<any>(this.apiUrl, data);
+  // }
+
 }

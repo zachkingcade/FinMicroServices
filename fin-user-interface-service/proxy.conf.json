@@ -1,6 +1,16 @@
     {
+      "/type": {
+        "target": "http://localhost:3001",
+        "secure": false,
+        "changeOrigin": true
+      },
       "/transaction": {
         "target": "http://localhost:3002",
+        "secure": false,
+        "changeOrigin": true
+      },
+      "/account": {
+        "target": "http://localhost:3001",
         "secure": false,
         "changeOrigin": true
       }
