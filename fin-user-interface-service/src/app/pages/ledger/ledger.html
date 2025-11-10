@@ -1,0 +1,31 @@
+<app-nav-bar></app-nav-bar>
+
+<div id="transactionDivs">
+    <table id="ledgerTable">
+        <thead>
+            <tr>
+                <!-- Dynamically create headers from the first item's keys -->
+                <th>Code</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th id="amountHeaderCell">Amount</th>
+                <th>Credit</th>
+                <th>Debit</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (item of this.transactionList; track item.trans_code) {
+            <tr>
+                <td>{{item.trans_code}}</td>
+                <td>{{item.trans_date}}</td>
+                <td>{{item.trans_description}}</td>
+                <td class="amountCells">{{(item.amount).toFixed(2)}}</td>
+                <td>{{item.credit_account}}</td>
+                <td>{{item.debit_account}}</td>
+                <td>{{item.notes? item.notes : ""}}</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>

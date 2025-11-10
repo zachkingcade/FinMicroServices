@@ -1,5 +1,5 @@
 {
-  "name": "fin-user-interfeace-service",
+  "name": "fin-user-interface-service",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -26,6 +26,8 @@
     "@angular/forms": "^20.0.0",
     "@angular/platform-browser": "^20.0.0",
     "@angular/router": "^20.0.0",
+    "angular-feather": "^6.5.1",
+    "feather-icons": "^4.29.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -33,6 +35,7 @@
     "@angular/build": "^20.0.4",
     "@angular/cli": "^20.0.4",
     "@angular/compiler-cli": "^20.0.0",
+    "@types/feather-icons": "^4.29.4",
     "@types/jasmine": "~5.1.0",
     "jasmine-core": "~5.7.0",
     "karma": "~6.4.0",
