@@ -5,6 +5,8 @@ import { Account, AccountDTO, AccountPresentable } from '../../types/Account';
 import { AccountsData } from '../../services/accounts-data';
 import { AccountType } from '../../types/AccountType';
 import { MtxSelect, MtxSelectModule } from '@ng-matero/extensions/select';
+import { ToastrService } from 'ngx-toastr';
+import { TransactionData } from '../../services/transaction-data';
 
 @Component({
   selector: 'app-accounts',
@@ -21,7 +23,9 @@ export class Accounts {
 
   constructor(
     private accountsData: AccountsData,
-    private cdr: ChangeDetectorRef
+    private transactionData: TransactionData,
+    private cdr: ChangeDetectorRef,
+    private toaster: ToastrService
   ) {
     this.accountsList = [];
     this.accountTypeList = [];
@@ -59,17 +63,29 @@ export class Accounts {
     let resultingList: AccountPresentable[] = [];
     await new Promise<void>((resolve, reject) => {
       this.accountsData.accountTypesGetAll().subscribe({
-        next: (response) => {
+        next: async (response) => {
           accountTypeList = response;
 
           for (let item of list) {
-            let typeObject = accountTypeList.find(type => type.type_code == item.account_type)
-            if (typeObject) {
+            let typeObject = accountTypeList.find(type => type.type_code == item.account_type);
+            let accountBalance: number = await new Promise<number>((resolve, reject) => {
+              this.transactionData.getCurrentAccountBalance(item.account_code).subscribe({
+                next: (response) => {
+                  console.log(`Gained Balance ${response}`) 
+                  resolve(response);
+                },
+                error: (error) => {
+                  console.error('Error fetching data:', error);
+                  reject(null);
+                }
+              })
+            })
+            if (typeObject && accountBalance != null) {
               let newTypePresentable: AccountPresentable = {
                 account_code: item.account_code,
                 account_type: typeObject.type_description,
                 account_description: item.account_description,
-                account_active: item.account_active == "Y" ? "Active" : "Inactive",
+                balance: accountBalance,
                 notes: item.notes ? item.notes : ""
               }
               resultingList.push(newTypePresentable);
@@ -95,17 +111,36 @@ export class Accounts {
       account_description: this.inputDescription.nativeElement.value,
       notes: this.inputNotes.nativeElement.value
     }
-    let response = await this.accountsData.postNewAccount(newAccoount).subscribe({
-      next: (response) => {
-        this.fetchData();
-        console.log(response);
-        this.typeSelection.value = "";
-        this.inputDescription.nativeElement.value = "";
-        this.inputNotes.nativeElement.value = "";
-      },
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      }
-    })
+    if (this.validateNewAccount(newAccoount)) {
+      let response = await this.accountsData.postNewAccount(newAccoount).subscribe({
+        next: (response) => {
+          this.fetchData();
+          console.log(response);
+          this.resetManualInput();
+        },
+        error: (error) => {
+          console.error('Error fetching data:', error);
+        }
+      })
+    }
+  }
+
+  resetManualInput() {
+    this.typeSelection.value = "";
+    this.inputDescription.nativeElement.value = "";
+    this.inputNotes.nativeElement.value = "";
+  }
+
+  validateNewAccount(newData: AccountDTO): boolean {
+    let result: boolean = true;
+    if (newData.account_description == "") {
+      this.toaster.error("Account must have a Description.")
+      result = false;
+    }
+    if (newData.account_type == 0 || newData.account_type == null) {
+      this.toaster.error("Account must have a Account Type.")
+      result = false;
+    }
+    return result;
   }
 }

@@ -11,8 +11,8 @@ export interface AccountPresentable {
     account_code: number,
     account_type: string,
     account_description: string,
+    balance: number,
     account_selectable?: string,
-    account_active: "Active" | "Inactive",
     notes?: string,
 }
 

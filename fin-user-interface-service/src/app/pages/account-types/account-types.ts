@@ -5,6 +5,7 @@ import { AccountsData } from '../../services/accounts-data';
 import { AccountType, AccountTypeDTO, AccountTypePresentable } from '../../types/AccountType';
 import { TypeClass } from '../../types/TypeClass';
 import { MtxSelect, MtxSelectModule } from '@ng-matero/extensions/select';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-account-types',
@@ -21,7 +22,8 @@ export class AccountTypes {
 
   constructor(
     private accountsData: AccountsData,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toaster: ToastrService
   ) {
     this.accountsTypeList = [];
     this.accountsClassList = [];
@@ -94,17 +96,37 @@ export class AccountTypes {
       type_description: this.inputDescription.nativeElement.value,
       notes: this.inputNotes.nativeElement.value
     }
-    let response = await this.accountsData.postNewAccountType(newAccoountType).subscribe({
-      next: (response) => {
-        this.fetchData();
-        console.log(response);
-        this.classSelection.value = "";
-        this.inputDescription.nativeElement.value = "";
-        this.inputNotes.nativeElement.value = "";
-      },
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      }
-    })
+    if (this.validateNewAccountType(newAccoountType)) {
+      let response = await this.accountsData.postNewAccountType(newAccoountType).subscribe({
+        next: (response) => {
+          this.fetchData();
+          console.log(response);
+          this.resetManualInput();
+        },
+        error: (error) => {
+          console.error('Error fetching data:', error);
+        }
+      })
+    }
   }
+
+  resetManualInput() {
+    this.classSelection.value = "";
+    this.inputDescription.nativeElement.value = "";
+    this.inputNotes.nativeElement.value = "";
+  }
+
+  validateNewAccountType(newData: AccountTypeDTO): boolean {
+    let result: boolean = true;
+    if (newData.type_class == 0 || newData.type_class == null) {
+      this.toaster.error("Account Type must have a Equation Section.")
+      result = false;
+    }
+    if (newData.type_description == "") {
+      this.toaster.error("Account Type must have a Description.")
+      result = false;
+    }
+    return result;
+  }
+
 }

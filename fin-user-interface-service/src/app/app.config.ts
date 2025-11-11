@@ -6,6 +6,8 @@ import { routes } from './app.routes';
 import { FeatherModule } from 'angular-feather';
 import { Home, MessageSquare, Users, Folder, Archive, HelpCircle, Settings, BookOpen, Package, PenTool } from 'angular-feather/icons';
 import { provideHttpClient } from '@angular/common/http';
+import { provideToastr } from 'ngx-toastr';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 const icons = { Home, MessageSquare, Users, Folder, Archive, HelpCircle, Settings, BookOpen, Package, PenTool };
 
@@ -16,6 +18,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideRouter(routes),
     importProvidersFrom(FeatherModule.pick(icons)),
-    provideHttpClient()
+    provideHttpClient(),
+    provideToastr(),
+    provideAnimations()
   ]
 };

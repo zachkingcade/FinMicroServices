@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { Account, AccountPresentable } from '../../types/Account';
 import { AccountsData } from '../../services/accounts-data';
 import { MtxSelect, MtxSelectModule } from '@ng-matero/extensions/select';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-ledger',
@@ -26,7 +27,8 @@ export class Ledger implements OnInit {
   constructor(
     private transactionData: TransactionData,
     private accountData: AccountsData,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toaster: ToastrService
   ) {
     this.transactionList = [];
     this.accountsList = [];
@@ -106,21 +108,53 @@ export class Ledger implements OnInit {
       debit_account: this.debitSelection.value,
       notes: this.inputNotes.nativeElement.value
     }
-    let response = await this.transactionData.postNewTransaction(newTransaction).subscribe({
-      next: (response) => {
-        this.fetchData();
-        console.log(response);
-        this.inputDate.nativeElement.value = "";
-        this.inputDescription.nativeElement.value = "";
-        this.inputAmount.nativeElement.value = "";
-        this.creditSelection.value = "";
-        this.debitSelection.value = "";
-        this.inputNotes.nativeElement.value = "";
-      },
-      error: (error) => {
-        console.error('Error fetching data:', error);
-      }
-    })
+    let proceed: boolean = this.validateNewTransaction(newTransaction);
+    if (proceed) {
+      let response = await this.transactionData.postNewTransaction(newTransaction).subscribe({
+        next: (response) => {
+          this.fetchData();
+          console.log(response);
+          this.resetManualInput();
+        },
+        error: (error) => {
+          console.error('Error fetching data:', error);
+        }
+      })
+    }
+  }
+
+  resetManualInput() {
+    this.inputDate.nativeElement.value = "";
+    this.inputDescription.nativeElement.value = "";
+    this.inputAmount.nativeElement.value = "";
+    this.creditSelection.value = "";
+    this.debitSelection.value = "";
+    this.inputNotes.nativeElement.value = "";
+  }
+
+  validateNewTransaction(newData: TransactionDTO): boolean {
+    let result: boolean = true;
+    if (newData.trans_date == "") {
+      this.toaster.error("Transaction must have a Date.")
+      result = false;
+    }
+    if (newData.trans_description == "") {
+      this.toaster.error("Transaction must have a Description.")
+      result = false;
+    }
+    if (newData.amount == 0 || newData.amount == null) {
+      this.toaster.error("Transaction must have an Amount.")
+      result = false;
+    }
+    if (newData.credit_account == 0 || newData.credit_account == null) {
+      this.toaster.error("Transaction must have a credit account.")
+      result = false;
+    }
+    if (newData.debit_account == 0 || newData.debit_account == null) {
+      this.toaster.error("Transaction must have a debit account.")
+      result = false;
+    }
+    return result;
   }
 
 }
