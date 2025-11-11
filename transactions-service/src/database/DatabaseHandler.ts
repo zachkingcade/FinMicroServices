@@ -56,7 +56,7 @@ export class DatabaseHandler {
             this.db.run(
                 `CREATE TABLE IF NOT EXISTS ledger_transactions (
             trans_code INTEGER PRIMARY KEY AUTOINCREMENT,
-            trans_date DATE NOT NULL,
+            trans_date TEXT NOT NULL,
             trans_description TEXT NOT NULL,
             amount DECIMAL(10, 2),
             credit_account INTEGER NOT NULL,
@@ -87,7 +87,7 @@ export class DatabaseHandler {
         let newInsertStatement: string = "";
         newInsertStatement += "INSERT INTO ledger_transactions ";
         newInsertStatement += `(trans_date,trans_description,amount,credit_account,debit_account${notes ? ",notes) " : ") "}`;
-        newInsertStatement += `VALUES (CAST('${trans_date}' AS DATE),"${trans_description}","${Math.abs(amount)}",${credit_account},${debit_account}${notes ? `,"${notes}"` : ""});`;
+        newInsertStatement += `VALUES ("${trans_date}","${trans_description}","${Math.abs(amount)}",${credit_account},${debit_account}${notes ? `,"${notes}"` : ""});`;
 
         try {
             await this.validateAccount(credit_account);
