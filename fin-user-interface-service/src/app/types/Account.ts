@@ -15,3 +15,14 @@ export interface AccountPresentable {
     account_active: "Active" | "Inactive",
     notes?: string,
 }
+
+export interface AccountDTO {
+    account_type: number,
+    account_description: string,
+    notes: string,
+}
+
+export interface AccountAddReturn {
+    status: string
+    newTransaction: Account
+}

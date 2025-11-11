@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AccountType } from '../types/AccountType';
-import { Account } from '../types/Account';
+import { AccountType, AccountTypeAddReturn, AccountTypeDTO } from '../types/AccountType';
+import { Account, AccountAddReturn, AccountDTO } from '../types/Account';
 import { TypeClass } from '../types/TypeClass';
 
 @Injectable({
@@ -24,8 +24,12 @@ export class AccountsData {
     return this.http.get<Account[]>(`/account/getall`);
   }
 
-  // postData(data: any): Observable<any> {
-  //   return this.http.post<any>(this.apiUrl, data);
-  // }
+  postNewAccountType(bodyData: AccountTypeDTO): Observable<AccountTypeAddReturn> {
+    return this.http.post<AccountTypeAddReturn>("/type/add", bodyData);
+  }
+
+    postNewAccount(bodyData: AccountDTO): Observable<AccountAddReturn> {
+    return this.http.post<AccountAddReturn>("/account/add", bodyData);
+  }
 
 }

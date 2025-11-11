@@ -24,3 +24,29 @@
 </div>
 
 
+<div id="manualInput">
+    <table id="accountsTypeTable">
+        <thead>
+            <tr>
+                <th>Equation Section</th>
+                <th>Description</th>
+                <th>Notes</th>
+                <th>Done?</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="selector">
+                    <mtx-select placeholder="Type to search" #classSelection>
+                        @for (item of this.accountsClassList; track item.class_code) {
+                        <mtx-option [value]="item.class_code">{{item.class_description}}</mtx-option>
+                        }
+                    </mtx-select>
+                </td>
+                <td><input type="text" id="accountTypeDescription" #inputDescription></td>
+                <td><input type="text" id="accountTypeNotes" #inputNotes></td>
+                <td><button (click)="submitNewAccountType()">Submit</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,24 +1,30 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { NavBar } from '../../components/nav-bar/nav-bar';
 import { CommonModule } from '@angular/common';
 import { AccountsData } from '../../services/accounts-data';
-import { AccountType, AccountTypePresentable } from '../../types/AccountType';
+import { AccountType, AccountTypeDTO, AccountTypePresentable } from '../../types/AccountType';
 import { TypeClass } from '../../types/TypeClass';
+import { MtxSelect, MtxSelectModule } from '@ng-matero/extensions/select';
 
 @Component({
   selector: 'app-account-types',
-  imports: [NavBar, CommonModule],
+  imports: [NavBar, CommonModule, MtxSelectModule],
   templateUrl: './account-types.html',
   styleUrl: './account-types.scss',
 })
 export class AccountTypes {
   accountsTypeList: AccountTypePresentable[];
+  accountsClassList: TypeClass[];
+  @ViewChild('classSelection') classSelection!: MtxSelect;
+  @ViewChild('inputDescription') inputDescription!: ElementRef<HTMLInputElement>;
+  @ViewChild('inputNotes') inputNotes!: ElementRef<HTMLInputElement>;
 
   constructor(
     private accountsData: AccountsData,
     private cdr: ChangeDetectorRef
   ) {
     this.accountsTypeList = [];
+    this.accountsClassList = [];
   }
 
   ngOnInit(): void {
@@ -36,12 +42,22 @@ export class AccountTypes {
         console.error('Error fetching data:', error);
       }
     });
+    this.accountsData.typesClassGetAll().subscribe({
+      next: async (response) => {
+        this.accountsClassList = response;
+        this.cdr.detectChanges();
+        console.log(response);
+      },
+      error: (error) => {
+        console.error('Error fetching data:', error);
+      }
+    });
   }
 
   async makeDataPresentable(list: AccountType[]) {
     let classList: TypeClass[] = [];
     let resultingList: AccountTypePresentable[] = [];
-    await new Promise<void> ((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       this.accountsData.typesClassGetAll().subscribe({
         next: (response) => {
           classList = response;
@@ -69,5 +85,26 @@ export class AccountTypes {
       })
     });
     return resultingList;
+  }
+
+  async submitNewAccountType() {
+    console.log("Submit new transaction");
+    let newAccoountType: AccountTypeDTO = {
+      type_class: this.classSelection.value,
+      type_description: this.inputDescription.nativeElement.value,
+      notes: this.inputNotes.nativeElement.value
+    }
+    let response = await this.accountsData.postNewAccountType(newAccoountType).subscribe({
+      next: (response) => {
+        this.fetchData();
+        console.log(response);
+        this.classSelection.value = "";
+        this.inputDescription.nativeElement.value = "";
+        this.inputNotes.nativeElement.value = "";
+      },
+      error: (error) => {
+        console.error('Error fetching data:', error);
+      }
+    })
   }
 }

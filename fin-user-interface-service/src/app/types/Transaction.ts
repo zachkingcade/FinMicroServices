@@ -18,7 +18,16 @@ export interface TransactionPresentable {
     notes: string
 }
 
-export interface transactionAddReturn {
+export interface TransactionDTO {
+    trans_date: string,
+    trans_description: string,
+    amount: number,
+    credit_account: number,
+    debit_account: number,
+    notes: string
+}
+
+export interface TransactionAddReturn {
     status: string
     newTransaction: Transaction
 }

@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { NavBar } from '../../components/nav-bar/nav-bar';
 import { TransactionData } from '../../services/transaction-data';
-import { Transaction, TransactionPresentable } from '../../types/Transaction';
+import { Transaction, TransactionDTO, TransactionPresentable } from '../../types/Transaction';
 import { CommonModule } from '@angular/common';
 import { Account, AccountPresentable } from '../../types/Account';
 import { AccountsData } from '../../services/accounts-data';
@@ -96,10 +96,9 @@ export class Ledger implements OnInit {
     return resultingList;
   }
 
-  async submitNewTransaction(){
+  async submitNewTransaction() {
     console.log("Submit new transaction");
-    let newTransaction: Transaction = {
-      trans_code: 1,
+    let newTransaction: TransactionDTO = {
       trans_date: this.inputDate.nativeElement.value,
       trans_description: this.inputDescription.nativeElement.value,
       amount: Number(this.inputAmount.nativeElement.value),
@@ -111,6 +110,12 @@ export class Ledger implements OnInit {
       next: (response) => {
         this.fetchData();
         console.log(response);
+        this.inputDate.nativeElement.value = "";
+        this.inputDescription.nativeElement.value = "";
+        this.inputAmount.nativeElement.value = "";
+        this.creditSelection.value = "";
+        this.debitSelection.value = "";
+        this.inputNotes.nativeElement.value = "";
       },
       error: (error) => {
         console.error('Error fetching data:', error);

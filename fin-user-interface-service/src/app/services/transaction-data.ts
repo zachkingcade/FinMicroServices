@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Transaction, transactionAddReturn } from '../types/Transaction';
+import { Transaction, TransactionAddReturn, TransactionDTO } from '../types/Transaction';
 
 @Injectable({
   providedIn: 'root',
@@ -14,8 +14,8 @@ export class TransactionData {
     return this.http.get<Transaction[]>("/transaction/getAll");
   }
 
-  postNewTransaction(bodyData: Transaction): Observable<transactionAddReturn>{
-    return this.http.post<transactionAddReturn>("/transaction/add", bodyData);
+  postNewTransaction(bodyData: TransactionDTO): Observable<TransactionAddReturn>{
+    return this.http.post<TransactionAddReturn>("/transaction/add", bodyData);
   }
 
   // postData(data: any): Observable<any> {
