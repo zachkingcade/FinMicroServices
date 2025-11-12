@@ -7,3 +7,10 @@ export interface Transaction {
     debit_account: number,
     notes?: string 
 }
+
+export interface PendingTransaction {
+    trans_code?: number,
+    trans_date: string,
+    trans_description: string,
+    amount: number, 
+}

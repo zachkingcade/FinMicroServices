@@ -3,7 +3,7 @@ import { WLog } from '../WLog.js'
 import { Logger } from 'winston'
 import { Account, AccountDTO } from '../types/Account.js'
 import { DatabaseHandler } from '../database/DatabaseHandler.js'
-import { Transaction } from '../types/Transaction.js'
+import { PendingTransaction, Transaction } from '../types/Transaction.js'
 
 export class ExpressHandler {
   private static instance: ExpressHandler | null = null
@@ -52,13 +52,42 @@ export class ExpressHandler {
       try {
         let newTransaction: Transaction = req.body
         this.log.info(`Recieved command: /account/add/ with data ${newTransaction}`);
-        await this.database.addTransaction(newTransaction.trans_date,newTransaction.trans_description, newTransaction.amount, newTransaction.credit_account,newTransaction.debit_account, newTransaction.notes);
+        await this.database.addTransaction(newTransaction.trans_date, newTransaction.trans_description, newTransaction.amount, newTransaction.credit_account, newTransaction.debit_account, newTransaction.notes);
         res.status(201).json({ status: 'Transaction Added', newTransaction })
       } catch (error) {
         this.log.error("Error http post: /transaction/add/, unable to add transaction");
         res.status(500).json({ status: 'Transaction Add Failed', error });
       }
+    });
+
+    this.app.post('/transaction/pending/add', async (req, res) => {
+      try {
+        let newPendingTransaction: PendingTransaction = req.body
+        this.log.info(`Recieved command:/transaction/pending/add with data ${newPendingTransaction}`);
+        await this.database.addPendingTransaction(newPendingTransaction.trans_date, newPendingTransaction.trans_description, newPendingTransaction.amount);
+        res.status(201).json({ status: 'Pending Transaction Added', newPendingTransaction })
+      } catch (error) {
+        this.log.error("Error http post: /transaction/pending/add, unable to add Pending transaction");
+        res.status(500).json({ status: 'Pending Transaction Add Failed', error });
+      }
     })
+
+    this.app.post('/transaction/pending/addbycsv', express.text(), async (req, res) => {
+      try {
+        this.log.info(`Recieved CSV: [${req.body}]`);
+        let pendingTransactionsCsvFile: string = req.body;
+        this.log.info(`Recieved command: /transaction/pending/addbycsv ${pendingTransactionsCsvFile}`);
+        let pendingTransactionArray = this.csvFileToPendingTransactionArray(pendingTransactionsCsvFile);
+        for (let newPending of pendingTransactionArray) {
+          await this.database.addPendingTransaction(newPending.trans_date, newPending.trans_description, newPending.amount);
+        }
+        res.status(201).json({ status: `Pending Transactions Added by csv. [${pendingTransactionArray.length}] new pending transactions.` });
+      } catch (error) {
+        this.log.error("Error http post: /transaction/pending/addbycsv, unable to add pending transactions");
+        res.status(500).json({ status: 'Pending Transaction Add by csv Failed', error });
+      }
+    })
+
   }
 
   setupGets() {
@@ -69,6 +98,16 @@ export class ExpressHandler {
       } catch (error) {
         this.log.error("Error http get: /transaction/getall, unable to get all transactions");
         res.status(500).json({ status: "Error http get: /transaction/getall, unable to get all transactions", error });
+      }
+    })
+
+    this.app.get('/transaction/pending/getall', async (req, res) => {
+      try {
+        let results: PendingTransaction[] = await this.database.getAllPendingTransactions();
+        res.json(results)
+      } catch (error) {
+        this.log.error("Error http get: /transaction/pending/getall, unable to get all pending transactions");
+        res.status(500).json({ status: "Error http get:/transaction/pending/getall, unable to get all pending transactions", error });
       }
     })
 
@@ -88,19 +127,19 @@ export class ExpressHandler {
       try {
         let accountCode = Number(req.params.accountCode);
         this.log.info(`Recieved command: /transaction/analysis/currentbalanceofaccount/:accountCode [${accountCode}]`);
-        
-        if(!(await this.database.validateAccount(accountCode))){
+
+        if (!(await this.database.validateAccount(accountCode))) {
           throw new Error(`Error in /transaction/analysis/currentbalanceofaccount/:accountCode [${accountCode}]. Invalid Account Code.`)
         }
 
         let transactionRecords: Transaction[] = await this.database.getAllTransactionsByAffectingAccount(accountCode);
 
         let result = 0;
-        for(let transaction of transactionRecords){
-          if(transaction.credit_account == accountCode){
+        for (let transaction of transactionRecords) {
+          if (transaction.credit_account == accountCode) {
             result -= transaction.amount;
           }
-          if(transaction.debit_account == accountCode){
+          if (transaction.debit_account == accountCode) {
             result += transaction.amount;
           }
         }
@@ -111,6 +150,38 @@ export class ExpressHandler {
         res.status(500).json({ status: `Error http get: /transaction/getbyaccount, unable to get all transactions with account [${req.params.accountCode}]`, error });
       }
     })
+  }
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // Logic Methods
+  //
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //Note expected csv for: Date,Description,Original Description,Category,Amount,Status
+  csvFileToPendingTransactionArray(fileString: string): PendingTransaction[] {
+    let results: PendingTransaction[] = [];
+    fileString = fileString.replace(/"/g,"");
+    let rows = fileString
+      .split(/\r?\n/) // Split by Windows or Unix newlines
+      .filter(line => line.trim() !== '') // Filter out lines that are empty or contain only whitespace
+
+    //removes first element, in this case the header of the .csv file
+    rows.shift();
+    for (let row of rows) {
+      let columns = row.split(',');
+      if (columns.length == 6) {
+        let newPendingTransaction: PendingTransaction = {
+          trans_date: columns[0]!,
+          trans_description: columns[1]!,
+          amount: Number(columns[4])!
+        }
+        results.push(newPendingTransaction);
+      } else {
+        this.log.error(`Error unable to make pending transaction from [${row}]. Not in expected format.`)
+      }
+    }
+
+    return results;
   }
 }

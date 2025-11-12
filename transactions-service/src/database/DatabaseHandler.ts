@@ -16,6 +16,7 @@ export class DatabaseHandler {
 
     //stored queries
     selectTransactionsAll: string = "SELECT * FROM ledger_transactions;";
+    selectPendingTransactionsAll: string = "SELECT * FROM pending_transactions;";
     selectTransactionsByAffectingAccounts: string = "SELECT * FROM ledger_transactions where credit_account = ? or debit_account = ?;";
 
     //--------------------------------------------------------------------------------
@@ -74,13 +75,32 @@ export class DatabaseHandler {
                 }
             );
         })
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                `CREATE TABLE IF NOT EXISTS pending_transactions (
+            trans_code INTEGER PRIMARY KEY AUTOINCREMENT,
+            trans_date TEXT NOT NULL,
+            trans_description TEXT NOT NULL,
+            amount DECIMAL(10, 2)
+            )`,
+                err => {
+                    if (err) {
+                        this.log.error('Error creating pending_transactions:', err.message);
+                        reject(err);
+                    } else {
+                        this.log.info('pending_transactions table created or already exists.')
+                        resolve();
+                    }
+                }
+            );
+        })
     }
 
     //--------------------------------------------------------------------------------
     //Adding New Records
     //--------------------------------------------------------------------------------
 
-    //Note trans_date is exspected in YYYY-MM-DD format
+    //Note trans_date is expected in YYYY-MM-DD format
     //TODO check for negative amounts
     async addTransaction(trans_date: string, trans_description: string, amount: number, credit_account: number, debit_account: number, notes?: string): Promise<void> {
         // Construct insert statement
@@ -110,7 +130,31 @@ export class DatabaseHandler {
                 }
             )
         })
+    }
 
+    //Note trans_date is expected in YYYY-MM-DD format
+    //TODO check for negative amounts
+    async addPendingTransaction(trans_date: string, trans_description: string, amount: number): Promise<void> {
+        // Construct insert statement
+        let newInsertStatement: string = "";
+        newInsertStatement += "INSERT INTO pending_transactions ";
+        newInsertStatement += `(trans_date,trans_description,amount)`;
+        newInsertStatement += `VALUES ("${trans_date}","${trans_description}","${Math.abs(amount)}");`;
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                newInsertStatement,
+                err => {
+                    if (err) {
+                        this.log.error(`Error inserting pending transaction with data: trans_date [${trans_date}], trans_description[${trans_description}], Error ${err.message}`);
+                        reject(err);
+                    } else {
+                        this.log.info(`Pending Transaction [${trans_description}] added successfully!`);
+                        resolve();
+                    }
+                }
+            )
+        })
     }
 
     //--------------------------------------------------------------------------------
@@ -164,13 +208,33 @@ export class DatabaseHandler {
     }
 
     /**
+     * Gets all pending transactions from the database
+     * @returns all pending transactions
+     */
+    async getAllPendingTransactions(): Promise<Transaction[]> {
+        let results: any = [];
+        await new Promise<void>((resolve, reject) => {
+            this.db.all(this.selectPendingTransactionsAll, [], (err, rows) => {
+                if (err) {
+                    this.log.error(`Error retrieving all pending transaction records from the database ${err.message}`);
+                    reject(err);
+                } else {
+                    results = rows;
+                    resolve();
+                }
+            });
+        })
+        return results;
+    }
+
+    /**
      * Gets all transactions from the database where the credit or debit matches the provided account_code
      * @returns all transactions where the credit or debit matches the provided account_code
      */
     async getAllTransactionsByAffectingAccount(account_code: number): Promise<Transaction[]> {
         let results: any = [];
         await new Promise<void>((resolve, reject) => {
-            this.db.all(this.selectTransactionsByAffectingAccounts, [account_code,account_code], (err, rows) => {
+            this.db.all(this.selectTransactionsByAffectingAccounts, [account_code, account_code], (err, rows) => {
                 if (err) {
                     this.log.error(`Error retrieving all transaction records from the database that have account ${account_code}`, err.message);
                     reject(err);
