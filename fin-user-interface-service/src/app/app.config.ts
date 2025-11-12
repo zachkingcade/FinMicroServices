@@ -4,12 +4,12 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 
 import { FeatherModule } from 'angular-feather';
-import { Home, MessageSquare, Users, Folder, Archive, HelpCircle, Settings, BookOpen, Package, PenTool } from 'angular-feather/icons';
+import { BookOpen, Inbox, Package, PenTool } from 'angular-feather/icons';
 import { provideHttpClient } from '@angular/common/http';
 import { provideToastr } from 'ngx-toastr';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
-const icons = { Home, MessageSquare, Users, Folder, Archive, HelpCircle, Settings, BookOpen, Package, PenTool };
+const icons = { BookOpen, Package, PenTool, Inbox };
 
 export const appConfig: ApplicationConfig = {
   providers: [
