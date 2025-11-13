@@ -1,1 +1,52 @@
-<p>pending-transactions works!</p>
+<app-nav-bar></app-nav-bar>
+
+<form [formGroup]="tableForm">
+    <div id="transactionDivs">
+        <table id="ledgerTable">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th id="amountHeaderCell">Amount</th>
+                    <th>Credit</th>
+                    <th>Debit</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody formArrayName="rows">
+                @for (row of rows.controls; let i = $index; track i) {
+                <tr [formGroupName]="i">
+                    <td class="columnSimpleOneLine">{{ transactionPendingList[i].trans_code }}</td>
+                    <td class="columnSimpleOneLine">{{ transactionPendingList[i].trans_date }}</td>
+                    <td class="columnSimpleOneLine">{{ transactionPendingList[i].trans_description }}</td>
+                    <td class="amountCells columnSimpleOneLine">{{ (transactionPendingList[i].amount).toFixed(2) }}</td>
+
+                    <td class="selector">
+                        <mtx-select placeholder="Select Credit" formControlName="credit">
+                            @for (item of this.accountsList; track item.account_code) {
+                            <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
+                            }
+                        </mtx-select>
+                    </td>
+
+                    <td class="selector">
+                        <mtx-select placeholder="Select Debit" formControlName="debit">
+                            @for (item of this.accountsList; track item.account_code) {
+                            <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
+                            }
+                        </mtx-select>
+                    </td>
+
+                    <td><input type="text" id="pendingTransactionNotes" formControlName="notes"></td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div id="formButtons">
+        <button type="button" (click)="apply()" id="applyButton">Apply</button>
+    </div>
+
+</form>

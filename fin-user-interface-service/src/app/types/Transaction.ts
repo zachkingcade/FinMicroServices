@@ -31,3 +31,10 @@ export interface TransactionAddReturn {
     status: string
     newTransaction: Transaction
 }
+
+export interface PendingTransaction {
+    trans_code?: number,
+    trans_date: string,
+    trans_description: string,
+    amount: number, 
+}

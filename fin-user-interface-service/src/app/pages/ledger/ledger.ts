@@ -39,7 +39,7 @@ export class Ledger implements OnInit {
   }
 
   fetchData(): void {
-    this.transactionData.getData().subscribe({
+    this.transactionData.getAllTransactions().subscribe({
       next: async (response) => {
         this.transactionList = await this.makeDataPresentable(response);
         this.cdr.detectChanges();

@@ -27,6 +27,8 @@
               }
             ],
             "styles": [
+              "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+              "node_modules/@ng-matero/extensions/prebuilt-themes/indigo-pink.css",
               "src/styles.scss"
             ]
           },

@@ -9,6 +9,7 @@
     border-width: 3px;
     border-color: black;
     border-style: solid;
+    overflow-y: auto;
 }
 
 app-nav-bar {
@@ -28,6 +29,9 @@ th {
     text-align: left;
     padding-right: .5em;
     padding-left: .5em;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 table {
