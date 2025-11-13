@@ -247,4 +247,55 @@ export class DatabaseHandler {
         return results;
     }
 
+    //--------------------------------------------------------------------------------
+    //Removing Records
+    //--------------------------------------------------------------------------------
+
+    //Note trans_date is expected in YYYY-MM-DD format
+    //TODO check for negative amounts
+    async removeTransaction(trans_code: number): Promise<void> {
+        // Construct insert statement
+        let newInsertStatement: string = "";
+        newInsertStatement += "Delete from ledger_transactions ";
+        newInsertStatement += `where trans_code = ${trans_code}`;
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                newInsertStatement,
+                err => {
+                    if (err) {
+                        this.log.error(`Error deleteing transaction with data: trans_code [${trans_code}]. Error: ${err.message}`);
+                        reject(err);
+                    } else {
+                        this.log.info(`Transaction [${trans_code}] deleted successfully!`);
+                        resolve();
+                    }
+                }
+            )
+        })
+    }
+
+    //Note trans_date is expected in YYYY-MM-DD format
+    //TODO check for negative amounts
+    async removePendingTransaction(trans_code: number): Promise<void> {
+        // Construct insert statement
+        let newInsertStatement: string = "";
+        newInsertStatement += "Delete from pending_transactions ";
+        newInsertStatement += `where trans_code = ${trans_code}`;
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                newInsertStatement,
+                err => {
+                    if (err) {
+                        this.log.error(`Error deleteing pending transaction with data: trans_code [${trans_code}]. Error: ${err.message}`);
+                        reject(err);
+                    } else {
+                        this.log.info(`Pending transaction [${trans_code}] deleted successfully!`);
+                        resolve();
+                    }
+                }
+            )
+        })
+    }
 }

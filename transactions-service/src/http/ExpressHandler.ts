@@ -4,6 +4,7 @@ import { Logger } from 'winston'
 import { Account, AccountDTO } from '../types/Account.js'
 import { DatabaseHandler } from '../database/DatabaseHandler.js'
 import { PendingTransaction, Transaction } from '../types/Transaction.js'
+import { error } from 'console'
 
 export class ExpressHandler {
   private static instance: ExpressHandler | null = null
@@ -72,6 +73,30 @@ export class ExpressHandler {
       }
     })
 
+    this.app.post('/transaction/remove', async (req, res) => {
+      try {
+        let oldTransaction: Transaction = req.body
+        this.log.info(`Recieved command: /transaction/remove with data ${oldTransaction}`);
+        await this.database.removeTransaction(oldTransaction.trans_code!)
+        res.status(201).json({ status: 'Transaction removed', oldTransaction })
+      } catch (error) {
+        this.log.error("Error http post: /transaction/remove, unable to remove transaction");
+        res.status(500).json({ status: 'Transaction remove Failed', error });
+      }
+    });
+
+    this.app.post('/transaction/pending/remove', async (req, res) => {
+      try {
+        let oldPendingTransaction: PendingTransaction = req.body
+        this.log.info(`Recieved command: /transaction/pending/remove with data ${oldPendingTransaction}`);
+        await this.database.removePendingTransaction(oldPendingTransaction.trans_code!)
+        res.status(201).json({ status: 'Pending Transaction removed', oldPendingTransaction })
+      } catch (error) {
+        this.log.error("Error http post: /transaction/pending/remove, unable to remove Pending transaction");
+        res.status(500).json({ status: 'Pending Transaction remove Failed', error });
+      }
+    })
+
     this.app.post('/transaction/pending/addbycsv', express.text(), async (req, res) => {
       try {
         this.log.info(`Recieved CSV: [${req.body}]`);
@@ -87,6 +112,27 @@ export class ExpressHandler {
         res.status(500).json({ status: 'Pending Transaction Add by csv Failed', error });
       }
     })
+
+    this.app.post('/transaction/pending/convert', async (req, res) => {
+      try {
+        let pendingTransactionsToConvert: Transaction[] = req.body
+        this.log.info(`Recieved command: /transaction/pending/convert with data [${pendingTransactionsToConvert}]`);
+        let amountConverted = 0;
+        for(let trans of pendingTransactionsToConvert){
+          try{
+            await this.convertPendingTransactionToTransaction(trans);
+            amountConverted++;
+          } catch(error){
+            this.log.error(`Unable to convert Pending transaction [${trans}]`);
+          }
+        }
+        res.status(201).json({ status: `Pending Transactions converted [${amountConverted}]`});
+      } catch (error) {
+        this.log.error("Error http post: /transaction/pending/convert, unable to convert Pending transaction");
+        res.status(500).json({ status: 'Pending Transaction convert Failed', error });
+      }
+    })
+
 
   }
 
@@ -161,7 +207,7 @@ export class ExpressHandler {
   //Note expected csv for: Date,Description,Original Description,Category,Amount,Status
   csvFileToPendingTransactionArray(fileString: string): PendingTransaction[] {
     let results: PendingTransaction[] = [];
-    fileString = fileString.replace(/"/g,"");
+    fileString = fileString.replace(/"/g, "");
     let rows = fileString
       .split(/\r?\n/) // Split by Windows or Unix newlines
       .filter(line => line.trim() !== '') // Filter out lines that are empty or contain only whitespace
@@ -183,5 +229,25 @@ export class ExpressHandler {
     }
 
     return results;
+  }
+
+  async convertPendingTransactionToTransaction(previouslyPendingTransaction: Transaction) {
+    let validAccounts: boolean = true;
+    //first check if the new accounts are valid
+    validAccounts = await this.database.validateAccount(previouslyPendingTransaction.credit_account);
+    validAccounts = await this.database.validateAccount(previouslyPendingTransaction.debit_account);
+
+    if (validAccounts) {
+      this.database.addTransaction(
+        previouslyPendingTransaction.trans_date,
+        previouslyPendingTransaction.trans_description,
+        previouslyPendingTransaction.amount,
+        previouslyPendingTransaction.credit_account,
+        previouslyPendingTransaction.debit_account,
+        previouslyPendingTransaction.notes);
+      this.database.removePendingTransaction(previouslyPendingTransaction.trans_code!);
+    } else {
+      throw new Error(`Unable to convert pending transaction to transaction. Invalid account found. [${previouslyPendingTransaction.credit_account}][${previouslyPendingTransaction.debit_account}]`);
+    }
   }
 }
