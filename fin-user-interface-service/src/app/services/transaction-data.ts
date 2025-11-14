@@ -29,4 +29,8 @@ export class TransactionData {
   postNewPendingTransactionsByCsv(csvString: string){
     return this.http.post<TransactionAddReturn>("/transaction/pending/addbycsv", csvString);
   }
+
+  postPendingTransactionsToConvert(transactionsToConvert: Transaction[]){
+    return this.http.post<TransactionAddReturn>("/transaction/pending/convert", transactionsToConvert);
+  }
 }

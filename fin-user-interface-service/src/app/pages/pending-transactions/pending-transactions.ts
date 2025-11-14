@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
-import { PendingTransaction } from '../../types/Transaction';
+import { PendingTransaction, Transaction } from '../../types/Transaction';
 import { TransactionData } from '../../services/transaction-data';
 import { AccountsData } from '../../services/accounts-data';
 import { ToastrService } from 'ngx-toastr';
@@ -16,6 +16,13 @@ type RowForm = FormGroup<{
   debit: FormControl<number | null>;
   notes: FormControl<string>;
 }>;
+
+interface rowReturnData {
+  trans_code: number,
+  credit: number,
+  debit: number,
+  notes?: string,
+}
 
 @Component({
   selector: 'app-pending-transactions',
@@ -47,7 +54,7 @@ export class PendingTransactions {
     this.fetchData();
   }
 
-  
+
   get rows(): FormArray<RowForm> {
     return this.tableForm.get('rows') as FormArray<RowForm>;
   }
@@ -91,24 +98,62 @@ export class PendingTransactions {
     })
   }
 
-  apply() {
-    // only grab changed (dirty) rows
+  async apply() {
     let changed = this.rows.controls
       .filter((g) => g.dirty)
-      .map((g) => g.getRawValue()); // {trans_code, credit, debit, notes}
+      .map((g) => g.getRawValue());
 
     if (!changed.length) {
       this.toaster.info('No edits to apply.');
       return;
     }
 
+    let sanatizedRowData: rowReturnData[] = [];
+    for (let row of changed) {
+      if (row.trans_code && row.debit && row.credit) {
+        sanatizedRowData.push({
+          trans_code: row.trans_code,
+          credit: row.credit,
+          debit: row.debit,
+          notes: row.notes ? row.notes : ""
+        })
+      } else {
+        this.toaster.error(`Pending Transactions must have both a credit and a debit before applying. Data missing from trans_code [${row.trans_code}]`);
+      }
+    }
+
     // TODO: send to your API
-    // this.transactionData.applyPending(changed).subscribe({...})
-
-    console.log('changed payload', changed);
-    this.toaster.success(`Applied ${changed.length} row(s).`);
-
-    // after successful save, clear dirty flags
-    this.rows.markAsPristine();
+    let newTransactions: Transaction[] = this.constructTransactionsFromChangedData(sanatizedRowData);
+    console.log(newTransactions);
+    this.transactionData.postPendingTransactionsToConvert(newTransactions).subscribe({
+      next: (response) => {
+        this.toaster.success(`${response.status}`);
+        this.fetchData();
+      },
+      error: (error) => {
+        this.toaster.error(`Error applying pending transaction. Error: ${error}`);
+      }
+    })
   }
+
+  constructTransactionsFromChangedData(changed: rowReturnData[]): Transaction[] {
+    let resultingList: Transaction[] = [];
+
+    for (let row of changed) {
+      let originalPendingTransaction = this.transactionPendingList.find(item => item.trans_code == row.trans_code);
+      let newTransaction: Transaction = {
+        trans_code: row.trans_code,
+        trans_date: originalPendingTransaction!.trans_date,
+        trans_description: originalPendingTransaction!.trans_description,
+        amount: originalPendingTransaction!.amount,
+        credit_account: row.credit,
+        debit_account: row.debit,
+        notes: row.notes
+      }
+      resultingList.push(newTransaction);
+    }
+    return resultingList;
+  }
+
+
 }
