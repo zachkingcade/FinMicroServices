@@ -107,7 +107,9 @@ export class DatabaseHandler {
             this.db.run(
                 `CREATE TABLE IF NOT EXISTS type_classes (
             class_code INTEGER PRIMARY KEY AUTOINCREMENT,
-            class_description TEXT UNIQUE NOT NULL
+            class_description TEXT UNIQUE NOT NULL,
+            credit_effect CHAR(1) NOT NULL,
+            debit_effect CHAR(1) NOT NULL
             )`,
                 err => {
                     if (err) {
@@ -129,10 +131,9 @@ export class DatabaseHandler {
                 if (results.length) {
                     resolve();
                 } else {
-                    await this.addTypeClass("Short Term Asset");
-                    await this.addTypeClass("Long Term Asset");
-                    await this.addTypeClass("Short Term Liability");
-                    await this.addTypeClass("Long Term Liability");
+                    await this.addTypeClass("Asset","+","-");
+                    await this.addTypeClass("Liability","-","+");
+                    await this.addTypeClass("Equity","-","+");
                     resolve();
                 }
             } catch (error) {
@@ -234,12 +235,12 @@ export class DatabaseHandler {
  * @param typeDescription describes the new type account class
  * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
  */
-    private async addTypeClass(classDescription: string): Promise<void> {
+    private async addTypeClass(classDescription: string, creditEffect: "+" | "-", debitEffect: "+" | "-"): Promise<void> {
         // Construct insert statement
         let newInsertStatement: string = "";
         newInsertStatement += "INSERT INTO type_classes ";
-        newInsertStatement += `(class_description)`;
-        newInsertStatement += `VALUES ("${classDescription}");`;
+        newInsertStatement += `(class_description,credit_effect,debit_effect)`;
+        newInsertStatement += `VALUES ("${classDescription}","${creditEffect}","${debitEffect}");`;
 
         await new Promise<void>((resolve, reject) => {
             this.db.run(
