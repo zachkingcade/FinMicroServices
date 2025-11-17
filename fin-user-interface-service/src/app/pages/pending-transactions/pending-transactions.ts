@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, inject, Input, ViewChild } from '@angular/core';
 import { PendingTransaction, Transaction } from '../../types/Transaction';
 import { TransactionData } from '../../services/transaction-data';
 import { AccountsData } from '../../services/accounts-data';
@@ -8,6 +8,8 @@ import { NavBar } from '../../components/nav-bar/nav-bar';
 import { CommonModule } from '@angular/common';
 import { MtxSelectModule } from '@ng-matero/extensions/select';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { FeatherModule } from 'angular-feather';
 
 
 type RowForm = FormGroup<{
@@ -26,7 +28,7 @@ interface rowReturnData {
 
 @Component({
   selector: 'app-pending-transactions',
-  imports: [NavBar, CommonModule, MtxSelectModule, ReactiveFormsModule],
+  imports: [NavBar, CommonModule, MtxSelectModule, ReactiveFormsModule, MatIconModule, FeatherModule],
   templateUrl: './pending-transactions.html',
   styleUrl: './pending-transactions.scss',
 })
@@ -35,6 +37,8 @@ export class PendingTransactions {
   accountsList: Account[];
   private formBuilder: FormBuilder;
   tableForm: FormGroup;
+  currentlySelectedFileName: string = "";
+  @ViewChild('fileInput') fileInput!: ElementRef;
 
   constructor(
     private transactionData: TransactionData,
@@ -153,6 +157,47 @@ export class PendingTransactions {
       resultingList.push(newTransaction);
     }
     return resultingList;
+  }
+
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+
+    if (file) {
+      this.currentlySelectedFileName = file.name;
+      const reader = new FileReader();
+
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const fileContent = e.target?.result as string;
+        let rows = fileContent.split(/\r?\n/).filter(line => line.trim() !== '');
+        if (rows[0] == "Date,Description,Original Description,Category,Amount,Status") {
+          this.transactionData.postNewPendingTransactionsByCsv(fileContent).subscribe({
+            next: (response) => {
+              this.toaster.success(response.status, "File Uploaded Successfully");
+              this.clearFileInput();
+              this.fetchData();
+            },
+            error: (error) => {
+              this.toaster.error(`Error posting file data: [${error}]`);
+            }
+          })
+        } else {
+          this.toaster.error(`Error provided file of an unknown format.`);
+        }
+
+      };
+
+      reader.onerror = (e: ProgressEvent<FileReader>) => {
+        this.toaster.error(`Error reading file: [${e.target?.error}]`);
+      };
+
+      reader.readAsText(file);
+    }
+  }
+
+  clearFileInput() {
+    this.fileInput.nativeElement.value = null;
+    this.currentlySelectedFileName = "";
+    this.cdr.detectChanges();
   }
 
 

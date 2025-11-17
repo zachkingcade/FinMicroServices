@@ -46,6 +46,18 @@
     </div>
 
     <div id="formButtons">
+        <!-- File input button -->
+        <input type="file" class="file-input" (change)="onFileSelected($event)" #fileInput>
+        <div class="file-upload">
+
+            <button mat-mini-fab color="primary" class="upload-btn" (click)="fileInput.click()">
+                <i-feather name="file"></i-feather>
+            </button>
+
+            {{currentlySelectedFileName || "No file uploaded yet."}}
+        </div>
+
+        <!-- File submit button -->
         <button type="button" (click)="apply()" id="applyButton">Apply</button>
     </div>
 

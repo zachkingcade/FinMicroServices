@@ -54,6 +54,7 @@ td {
 }
 
 #formButtons {
+    margin-top: 1em;
     position: relative;
     height: 3em;
     width: calc(100vw - 20rem);
@@ -66,4 +67,12 @@ td {
 #applyButton {
     height:3em;
     width: 5em;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-upload {
+    float: left;
 }
