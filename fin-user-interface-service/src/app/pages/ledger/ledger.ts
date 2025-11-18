@@ -7,14 +7,18 @@ import { Account, AccountPresentable } from '../../types/Account';
 import { AccountsData } from '../../services/accounts-data';
 import { MtxSelect, MtxSelectModule } from '@ng-matero/extensions/select';
 import { ToastrService } from 'ngx-toastr';
+import { FeatherModule } from 'angular-feather';
+import { MatDialog } from '@angular/material/dialog';
+import { Confirmation } from '../../components/confirmation/confirmation';
 
 @Component({
   selector: 'app-ledger',
-  imports: [NavBar, CommonModule, MtxSelectModule],
+  imports: [NavBar, CommonModule, MtxSelectModule, FeatherModule],
   templateUrl: './ledger.html',
   styleUrl: './ledger.scss',
 })
 export class Ledger implements OnInit {
+  originalTransactionData: Transaction[] = [];
   transactionList: TransactionPresentable[];
   accountsList: Account[];
   @ViewChild('inputDate') inputDate!: ElementRef<HTMLInputElement>;
@@ -28,7 +32,8 @@ export class Ledger implements OnInit {
     private transactionData: TransactionData,
     private accountData: AccountsData,
     private cdr: ChangeDetectorRef,
-    private toaster: ToastrService
+    private toaster: ToastrService,
+    private dialog: MatDialog
   ) {
     this.transactionList = [];
     this.accountsList = [];
@@ -41,6 +46,7 @@ export class Ledger implements OnInit {
   fetchData(): void {
     this.transactionData.getAllTransactions().subscribe({
       next: async (response) => {
+        this.originalTransactionData = response;
         this.transactionList = await this.makeDataPresentable(response);
         this.cdr.detectChanges();
         console.log(response);
@@ -156,5 +162,31 @@ export class Ledger implements OnInit {
     }
     return result;
   }
+
+    confirmDeletion(itemTodeleteCode: number) {
+      let itemTodelete: Transaction = this.originalTransactionData.find( item => item.trans_code == itemTodeleteCode)!;
+      const itemDescription = `${itemTodelete.trans_date}] [${itemTodelete.trans_description}] [${itemTodelete.amount}`;
+      const dialogRef = this.dialog.open(Confirmation, {
+        data: {
+          title: 'Hold up ✋',
+          message: `Are you sure you want to delete [${itemDescription}]? ` +
+          "\n\n This can throw off the balance. This cannot be undone."
+        }
+      });
+  
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.transactionData.postTransactionRemoval(itemTodelete).subscribe({
+            next: (response) => {
+              this.toaster.success(response.status, `Trasaction [${itemDescription}] deleted successfully!`);
+              this.fetchData();
+            },
+            error: (error) => {
+              this.toaster.error(`Error deleting transaction [${itemDescription}] : [${error}]`);
+            }
+          })
+        }
+      });
+    }
 
 }

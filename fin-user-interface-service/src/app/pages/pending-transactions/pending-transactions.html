@@ -12,6 +12,8 @@
                     <th>Credit</th>
                     <th>Debit</th>
                     <th>Notes</th>
+                    <!-- This is the empty header for the action buttons -->
+                    <th></th>
                 </tr>
             </thead>
             <tbody formArrayName="rows">
@@ -39,6 +41,10 @@
                     </td>
 
                     <td><input type="text" id="pendingTransactionNotes" formControlName="notes"></td>
+                    <!-- Dedicated column for buttons -->
+                    <td>
+                        <button class="actionButtons" (click)="confirmDeletion(i)"><i-feather name="trash-2"></i-feather></button>
+                    </td>
                 </tr>
                 }
             </tbody>

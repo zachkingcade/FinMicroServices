@@ -10,6 +10,8 @@ import { MtxSelectModule } from '@ng-matero/extensions/select';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { FeatherModule } from 'angular-feather';
+import { MatDialog } from '@angular/material/dialog';
+import { Confirmation } from '../../components/confirmation/confirmation';
 
 
 type RowForm = FormGroup<{
@@ -44,7 +46,8 @@ export class PendingTransactions {
     private transactionData: TransactionData,
     private accountData: AccountsData,
     private cdr: ChangeDetectorRef,
-    private toaster: ToastrService
+    private toaster: ToastrService,
+    private dialog: MatDialog
   ) {
     this.transactionPendingList = [];
     this.accountsList = [];
@@ -200,5 +203,28 @@ export class PendingTransactions {
     this.cdr.detectChanges();
   }
 
+  confirmDeletion(itemIndex: number) {
+    const itemDescription = `${this.transactionPendingList[itemIndex].trans_date}] [${this.transactionPendingList[itemIndex].trans_description}] [${this.transactionPendingList[itemIndex].amount}`;
+    const dialogRef = this.dialog.open(Confirmation, {
+      data: {
+        title: 'Hold up ✋',
+        message: `Are you sure you want to delete [${itemDescription}]?`
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.transactionData.postPendinngTransactionRemoval(this.transactionPendingList[itemIndex]).subscribe({
+          next: (response) => {
+            this.toaster.success(response.status, `Pending Trasaction [${itemDescription}] deleted successfully!`);
+            this.fetchData();
+          },
+          error: (error) => {
+            this.toaster.error(`Error deleting pending transaction [${itemDescription}] : [${error}]`);
+          }
+        })
+      }
+    });
+  }
 
 }

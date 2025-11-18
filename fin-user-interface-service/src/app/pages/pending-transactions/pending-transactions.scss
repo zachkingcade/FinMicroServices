@@ -44,7 +44,8 @@ tr:nth-child(even) {
 }
 
 td {
-    padding-bottom: 1em;
+    padding-top: .5em;
+    padding-bottom: .5em;
     padding-right: .5em;
     padding-left: .5em;
 }
@@ -75,4 +76,14 @@ td {
 
 .file-upload {
     float: left;
+}
+
+.actionButtons {
+    background-color: transparent;
+    outline: none;
+    border: 0;
+}
+
+.actionButtons:hover {
+    color:red;
 }

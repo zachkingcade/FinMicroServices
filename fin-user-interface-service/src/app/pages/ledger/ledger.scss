@@ -65,3 +65,13 @@ td {
     overflow-y: hidden;
     overflow-x: auto;
 }
+
+.actionButtons {
+    background-color: transparent;
+    outline: none;
+    border: 0;
+}
+
+.actionButtons:hover {
+    color:red;
+}

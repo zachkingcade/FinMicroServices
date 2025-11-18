@@ -11,6 +11,8 @@
                 <th>Credit</th>
                 <th>Debit</th>
                 <th>Notes</th>
+                <!-- This is the empty header for the action buttons -->
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -23,6 +25,10 @@
                 <td class="columnSimpleOneLine">{{item.credit_account}}</td>
                 <td class="columnSimpleOneLine">{{item.debit_account}}</td>
                 <td class="columnTakeExtraSpace">{{item.notes? item.notes : "-"}}</td>
+                <!-- Dedicated column for buttons -->
+                <td>
+                    <button class="actionButtons" (click)="confirmDeletion(item.trans_code)"><i-feather name="trash-2"></i-feather></button>
+                </td>
             </tr>
             }
         </tbody>

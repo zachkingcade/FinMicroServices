@@ -26,11 +26,19 @@ export class TransactionData {
     return this.http.post<TransactionAddReturn>("/transaction/add", bodyData);
   }
 
-  postNewPendingTransactionsByCsv(csvString: string){
+  postNewPendingTransactionsByCsv(csvString: string) {
     return this.http.post<TransactionAddReturn>("/transaction/pending/addbycsv", csvString);
   }
 
-  postPendingTransactionsToConvert(transactionsToConvert: Transaction[]){
+  postPendingTransactionsToConvert(transactionsToConvert: Transaction[]) {
     return this.http.post<TransactionAddReturn>("/transaction/pending/convert", transactionsToConvert);
+  }
+
+  postTransactionRemoval(transactionToDelete: Transaction) {
+    return this.http.post<TransactionAddReturn>("/transaction/remove", transactionToDelete);
+  }
+
+  postPendinngTransactionRemoval(transactionToDelete: PendingTransaction) {
+    return this.http.post<TransactionAddReturn>("/transaction/pending/remove", transactionToDelete);
   }
 }
