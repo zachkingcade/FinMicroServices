@@ -5,12 +5,15 @@ import { Account, AccountDTO } from '../types/Account.js'
 import { DatabaseHandler } from '../database/DatabaseHandler.js'
 import { PendingTransaction, Transaction } from '../types/Transaction.js'
 import { error } from 'console'
+import { AccountService } from './AccountService.js'
+import { TypeClass } from '../types/TypeClass.js'
 
 export class ExpressHandler {
   private static instance: ExpressHandler | null = null
   private app = express()
   private log!: Logger
   private database!: DatabaseHandler
+  private accountService!: AccountService;
 
   static async getInstance(): Promise<ExpressHandler> {
     if (this.instance) {
@@ -22,8 +25,8 @@ export class ExpressHandler {
     newInstance.log.info("Creating new ExpressHandler instance!");
 
     newInstance.app.use(express.json())
-    newInstance.database = await new DatabaseHandler()
-    newInstance.database = new DatabaseHandler()
+    newInstance.database = await new DatabaseHandler();
+    newInstance.accountService = new AccountService();
     await newInstance.database.startup()
     newInstance.setupPosts()
     newInstance.setupGets()
@@ -118,15 +121,15 @@ export class ExpressHandler {
         let pendingTransactionsToConvert: Transaction[] = req.body
         this.log.info(`Recieved command: /transaction/pending/convert with data [${pendingTransactionsToConvert}]`);
         let amountConverted = 0;
-        for(let trans of pendingTransactionsToConvert){
-          try{
+        for (let trans of pendingTransactionsToConvert) {
+          try {
             await this.convertPendingTransactionToTransaction(trans);
             amountConverted++;
-          } catch(error){
+          } catch (error) {
             this.log.error(`Unable to convert Pending transaction [${trans}]`);
           }
         }
-        res.status(201).json({ status: `Pending Transactions converted [${amountConverted}]`});
+        res.status(201).json({ status: `Pending Transactions converted [${amountConverted}]` });
       } catch (error) {
         this.log.error("Error http post: /transaction/pending/convert, unable to convert Pending transaction");
         res.status(500).json({ status: 'Pending Transaction convert Failed', error });
@@ -179,14 +182,25 @@ export class ExpressHandler {
         }
 
         let transactionRecords: Transaction[] = await this.database.getAllTransactionsByAffectingAccount(accountCode);
+        let typeClass: TypeClass = await this.accountService.requestAccountDetails(accountCode);
+
+        this.log.info(`transactions: ${JSON.stringify(transactionRecords)}`);
 
         let result = 0;
         for (let transaction of transactionRecords) {
           if (transaction.credit_account == accountCode) {
-            result -= transaction.amount;
+            if (typeClass.credit_effect == "+") {
+              result += transaction.amount;
+            } else {
+              result -= transaction.amount;
+            }
           }
           if (transaction.debit_account == accountCode) {
-            result += transaction.amount;
+            if (typeClass.debit_effect == "+") {
+              result += transaction.amount;
+            } else {
+              result -= transaction.amount;
+            }
           }
         }
 

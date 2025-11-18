@@ -25,6 +25,7 @@ export class DatabaseHandler {
     selectTypeByDescription: string = "SELECT * FROM account_types where type_description = ?;";
 
     selectTypeClassAll: string = "SELECT * FROM type_classes;";
+    selectTypeClassById: string = "SELECT * FROM type_classes where class_code = ?;";
 
     //--------------------------------------------------------------------------------
     //Class Setup
@@ -375,6 +376,28 @@ export class DatabaseHandler {
             this.db.get(this.selectTypeById, [id], (err, row) => {
                 if (err) {
                     this.log.error(`Error retrieving type by Id [${id}] from the database `, err.message);
+                    reject(err);
+                } else {
+                    console.log(row);
+                    result = row;
+                    resolve();
+                }
+            })
+        })
+        return result;
+    }
+
+    /**
+     * Gets type class by id
+     * @param id type class's class_code
+     * @returns type class by id 
+     */
+    async getTypeClassById(id: number): Promise<AccountType> {
+        let result: any;
+        await new Promise<void>((resolve, reject) => {
+            this.db.get(this.selectTypeClassById, [id], (err, row) => {
+                if (err) {
+                    this.log.error(`Error retrieving type class by Id [${id}] from the database ${err.message}`);
                     reject(err);
                 } else {
                     console.log(row);

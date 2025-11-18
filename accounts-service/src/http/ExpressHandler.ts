@@ -132,6 +132,18 @@ export class ExpressHandler {
       }
     })
 
+    this.app.get('/type/class/getbyid/:classId', async (req, res) => {
+      try {
+        let classId = req.params.classId
+        this.log.info(`Recieved command: /type/class/getbyid/:classId with data ${classId}`);
+        let result: AccountTypeDTO = await this.database.getTypeClassById(Number(classId))
+        res.json(result)
+      } catch (error) {
+        this.log.error(`Error http get: //type/class/getbyid/:classId, unable to get type class by id [${req.params.classId}]`);
+        res.status(500).json({ status: `Error http get: /type/class/getbyid/:classId, unable to get type class by id [${req.params.classId}]`, error });
+      }
+    })
+
     this.app.get('/type/getbydescription/:typeDescription', async (req, res) => {
       try {
         let description = req.params.typeDescription
