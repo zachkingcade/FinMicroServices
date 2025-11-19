@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, inject, Input, ViewChild } from '@angular/core';
-import { PendingTransaction, Transaction } from '../../types/Transaction';
+import { PendingTransaction, Transaction, TransactionDTO } from '../../types/Transaction';
 import { TransactionData } from '../../services/transaction-data';
 import { AccountsData } from '../../services/accounts-data';
 import { ToastrService } from 'ngx-toastr';
@@ -12,6 +12,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { FeatherModule } from 'angular-feather';
 import { MatDialog } from '@angular/material/dialog';
 import { Confirmation } from '../../components/confirmation/confirmation';
+import { AccountType } from '../../types/AccountType';
+import { TypeClass } from '../../types/TypeClass';
+import { SplitTransactionModal } from '../../components/split-transaction-modal/split-transaction-modal';
 
 
 type RowForm = FormGroup<{
@@ -37,6 +40,8 @@ interface rowReturnData {
 export class PendingTransactions {
   transactionPendingList: PendingTransaction[];
   accountsList: Account[];
+  accountTypeList: AccountType[];
+  typeClassList: TypeClass[];
   private formBuilder: FormBuilder;
   tableForm: FormGroup;
   currentlySelectedFileName: string = "";
@@ -51,6 +56,8 @@ export class PendingTransactions {
   ) {
     this.transactionPendingList = [];
     this.accountsList = [];
+    this.accountTypeList = [];
+    this.typeClassList = [];
     this.formBuilder = inject(FormBuilder);
     this.tableForm = this.formBuilder.group({
       rows: this.formBuilder.array<RowForm>([])
@@ -103,6 +110,23 @@ export class PendingTransactions {
         console.error('Error fetching data:', error);
       }
     })
+    this.accountData.accountTypesGetAll().subscribe({
+      next: (response) => {
+        this.accountTypeList = response;
+      },
+      error: (error) => {
+        console.error('Error fetching data:', error);
+      }
+    })
+    this.accountData.typesClassGetAll().subscribe({
+      next: (response) => {
+        this.typeClassList = response;
+      },
+      error: (error) => {
+        console.error('Error fetching data:', error);
+      }
+    })
+
   }
 
   async apply() {
@@ -129,7 +153,6 @@ export class PendingTransactions {
       }
     }
 
-    // TODO: send to your API
     let newTransactions: Transaction[] = this.constructTransactionsFromChangedData(sanatizedRowData);
     console.log(newTransactions);
     this.transactionData.postPendingTransactionsToConvert(newTransactions).subscribe({
@@ -224,6 +247,75 @@ export class PendingTransactions {
           }
         })
       }
+    });
+  }
+
+  determineEffect(account_code: number, creditOrDebit: "credit" | "debit"): '+' | '-' {
+    let account = this.accountsList.find(account => account.account_code == account_code);
+    if (!account) {
+      console.error("Error: account provided not found in account type list.")
+    }
+
+    let accountType = this.accountTypeList.find(type => type.type_code == account!.account_type);
+    if (!accountType) {
+      console.error("Error: account type not found in account type list.")
+    }
+
+    let typeClass = this.typeClassList.find(tclass => tclass.class_code == accountType!.type_class);
+    if (!typeClass) {
+      console.error("Error: account type class not found in type class list.")
+    }
+
+    return creditOrDebit == "credit" ? typeClass!.credit_effect : typeClass!.debit_effect;
+  }
+
+  openSplitModal(index: number) {
+    const original = this.transactionPendingList[index];
+
+    const dialogRef = this.dialog.open(SplitTransactionModal, {
+      width: '80vw',
+      data: {
+        originalTransaction: original,
+        accountOptions: this.accountsList,
+        accountTypeList: this.accountTypeList,
+        typeClassList: this.typeClassList
+      },
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe(async (results: TransactionDTO[]) => {
+      if (!results) {
+        this.toaster.error("No changes made!");
+        return;
+      }
+
+      console.log(results);
+
+      for (let newTransaction of results) {
+        await new Promise<void>((resolve, reject) => {
+          this.transactionData.postNewTransaction(newTransaction).subscribe({
+            next: (response) => {
+              this.toaster.success(response.status, `New Trasaction [${newTransaction.trans_description}] created successfully!`);
+              resolve();
+            },
+            error: (error) => {
+              this.toaster.error(`Error with split transaction [${JSON.stringify(newTransaction)}]: [${error}]`);
+            }
+          })
+        });
+      }
+
+      this.transactionData.postPendinngTransactionRemoval(original).subscribe({
+        next: (response) => {
+          this.toaster.success(response.status, `Pending Trasaction [${original.trans_description}] deleted successfully!`);
+          this.fetchData();
+        },
+        error: (error) => {
+          this.toaster.error(`Error with deleting pending transaction from split [${JSON.stringify(original)}]: [${error}]`);
+        }
+      })
+
+
     });
   }
 

@@ -66,16 +66,22 @@ td {
 }
 
 #applyButton {
-    height:3em;
+    height: 3em;
     width: 5em;
 }
 
 .file-input {
-  display: none;
+    display: none;
 }
 
 .file-upload {
     float: left;
+}
+
+#actionButtonsColumn {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
 }
 
 .actionButtons {
@@ -84,6 +90,14 @@ td {
     border: 0;
 }
 
-.actionButtons:hover {
-    color:red;
+#trash:hover {
+    color: red;
+}
+
+#split:hover {
+    color: aqua;
+}
+
+.effectText {
+    font-size: small;
 }

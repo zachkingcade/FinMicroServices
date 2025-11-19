@@ -30,6 +30,10 @@
                             <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
                             }
                         </mtx-select>
+                        @if (row.get('credit')?.value && determineEffect(row.get('credit')!.value!,"credit") == '+')
+                        {<p class="effectText positiveEffect">Increase ^</p>}
+                        @if (row.get('credit')?.value && determineEffect(row.get('credit')!.value!,"credit") == '-')
+                        {<p class="effectText negativeEffect">Decrease v</p>}
                     </td>
 
                     <td class="selector">
@@ -38,12 +42,17 @@
                             <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
                             }
                         </mtx-select>
+                        @if (row.get('debit')?.value && determineEffect(row.get('debit')!.value!,"debit") == '+')
+                        {<p class="effectText positiveEffect">Increase ^</p>}
+                        @if (row.get('debit')?.value && determineEffect(row.get('debit')!.value!,"debit") == '-')
+                        {<p class="effectText negativeEffect">Decrease v</p>}
                     </td>
 
                     <td><input type="text" id="pendingTransactionNotes" formControlName="notes"></td>
                     <!-- Dedicated column for buttons -->
-                    <td>
-                        <button class="actionButtons" (click)="confirmDeletion(i)"><i-feather name="trash-2"></i-feather></button>
+                    <td id="actionButtonsColumn">
+                        <button class="actionButtons" id="trash" (click)="confirmDeletion(i)"><i-feather name="trash-2"></i-feather></button>
+                        <button class="actionButtons" id="split" (click)="openSplitModal(i)"><i-feather name="columns"></i-feather></button>
                     </td>
                 </tr>
                 }
