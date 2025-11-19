@@ -7,11 +7,24 @@ import { AccountTypeDTO } from '../types/AccountType.js'
 import { TypeClass } from '../types/TypeClass.js'
 
 export class ExpressHandler {
+
+  //--------------------------------------------------------------------------------
+  //Member Varibles
+  //--------------------------------------------------------------------------------
   private static instance: ExpressHandler | null = null
   private app = express()
   private log!: Logger
   private database!: DatabaseHandler
 
+  //--------------------------------------------------------------------------------
+  //Class Setup
+  //--------------------------------------------------------------------------------
+
+
+  /**
+   * Gets the singleton instance if it exists and creates it if it does not
+   * @returns singeton instance
+   */
   static async getInstance(): Promise<ExpressHandler> {
     if (this.instance) {
       return this.instance
@@ -37,7 +50,7 @@ export class ExpressHandler {
           resolve()
         } catch (err) {
           newInstance.log.error(
-            `Unable to establish listener on port [${PORT}]`
+            `Unable to establish listener on port [${PORT}]: [${err}]`
           )
           reject()
         }
@@ -48,6 +61,11 @@ export class ExpressHandler {
     return newInstance
   }
 
+
+  //--------------------------------------------------------------------------------
+  // HTTP Posts
+  //--------------------------------------------------------------------------------
+
   setupPosts() {
     this.app.post('/account/add', async (req, res) => {
       try {
@@ -56,7 +74,7 @@ export class ExpressHandler {
         await this.database.addAccount(newAccount.account_description, newAccount.account_type, newAccount.notes, newAccount.account_active);
         res.status(201).json({ status: 'Account Added', newAccount })
       } catch (error) {
-        this.log.error("Error http post: /account/add/, unable to add account");
+        this.log.error(`Error http post: /account/add/, unable to add account: [${error}]`);
         res.status(500).json({ status: 'Account Add Failed', error });
       }
     })
@@ -68,11 +86,16 @@ export class ExpressHandler {
         await this.database.addAccountType(newAccountType.type_description, newAccountType.type_class, newAccountType.notes)
         res.status(201).json({ status: 'Account Type Added', newAccountType })
       } catch (error) {
-        this.log.error("Error http post: /type/add/, unable to add account type");
+        this.log.error(`Error http post: /type/add/, unable to add account type: [${error}]`);
         res.status(500).json({ status: 'Account Type Add Failed', error });
       }
     })
   }
+
+
+  //--------------------------------------------------------------------------------
+  // HTTP GETs
+  //--------------------------------------------------------------------------------
 
   setupGets() {
     this.app.get('/account/getall', async (req, res) => {
@@ -80,7 +103,7 @@ export class ExpressHandler {
         let results: AccountDTO[] = await this.database.getAllAccounts()
         res.json(results)
       } catch (error) {
-        this.log.error("Error http get: /account/getall, unable to get all accounts");
+        this.log.error(`Error http get: /account/getall, unable to get all accounts: [${error}]`);
         res.status(500).json({ status: "Error http get: /account/getall, unable to get all accounts", error });
       }
     })
@@ -91,7 +114,7 @@ export class ExpressHandler {
         let results: AccountTypeDTO[] = await this.database.getAllTypes()
         res.json(results)
       } catch (error) {
-        this.log.error("Error http get: /type/getall, unable to get all account types");
+        this.log.error(`Error http get: /type/getall, unable to get all account types: [${error}]`);
         res.status(500).json({ status: "Error http get: /type/getall, unable to get all account types", error });
       }
     })
@@ -103,7 +126,7 @@ export class ExpressHandler {
         let results: TypeClass[] = await this.database.getAllTypeClasses();
         res.json(results)
       } catch (error) {
-        this.log.error("Error http get: /type/class/getall, unable to get all account type classes");
+        this.log.error(`Error http get: /type/class/getall, unable to get all account type classes: [${error}]`);
         res.status(500).json({ status: "Error http get: /type/class/getall, unable to get all account type classes", error });
       }
     })
@@ -115,7 +138,7 @@ export class ExpressHandler {
         let result: AccountDTO = await this.database.getAccountById(Number(accountId))
         res.json(result)
       } catch (error) {
-        this.log.error(`Error http get: /account/getbyid/:accountId, unable to get account by id [${req.params.accountId}]`);
+        this.log.error(`Error http get: /account/getbyid/:accountId, unable to get account by id [${req.params.accountId}]: [${error}]`);
         res.status(500).json({ status: `Error http get: /account/getbyid/:accountId, unable to get account by id [${req.params.accountId}]`, error });
       }
     })
@@ -127,7 +150,7 @@ export class ExpressHandler {
         let result: AccountTypeDTO = await this.database.getTypeById(Number(accountId))
         res.json(result)
       } catch (error) {
-        this.log.error(`Error http get: /type/getbyid/:typeId, unable to get account type by id [${req.params.typeId}]`);
+        this.log.error(`Error http get: /type/getbyid/:typeId, unable to get account type by id [${req.params.typeId}]: [${error}]`);
         res.status(500).json({ status: `Error http get: /type/getbyid/:typeId, unable to get account type by id [${req.params.typeId}]`, error });
       }
     })
@@ -139,7 +162,7 @@ export class ExpressHandler {
         let result: AccountTypeDTO = await this.database.getTypeClassById(Number(classId))
         res.json(result)
       } catch (error) {
-        this.log.error(`Error http get: //type/class/getbyid/:classId, unable to get type class by id [${req.params.classId}]`);
+        this.log.error(`Error http get: //type/class/getbyid/:classId, unable to get type class by id [${req.params.classId}]: [${error}]`);
         res.status(500).json({ status: `Error http get: /type/class/getbyid/:classId, unable to get type class by id [${req.params.classId}]`, error });
       }
     })
@@ -151,7 +174,7 @@ export class ExpressHandler {
         let result: AccountTypeDTO = await this.database.getTypeByDescription(description)
         res.json(result)
       } catch (error) {
-        this.log.error(`Error http get: /type/getbydescription/:typeDescription, unable to get account type by description [${req.params.typeDescription}]`);
+        this.log.error(`Error http get: /type/getbydescription/:typeDescription, unable to get account type by description [${req.params.typeDescription}]: [${error}]`);
         res.status(500).json({ status: `Error http get: /type/getbydescription/:typeDescription, unable to get account type by description [${req.params.typeDescription}]`, error });
       }
     }

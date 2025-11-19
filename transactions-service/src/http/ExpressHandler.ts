@@ -59,7 +59,7 @@ export class ExpressHandler {
         await this.database.addTransaction(newTransaction.trans_date, newTransaction.trans_description, newTransaction.amount, newTransaction.credit_account, newTransaction.debit_account, newTransaction.notes);
         res.status(201).json({ status: 'Transaction Added', newTransaction })
       } catch (error) {
-        this.log.error("Error http post: /transaction/add/, unable to add transaction");
+        this.log.error(`Error http post: /transaction/add/, unable to add transaction: ${error}`);
         res.status(500).json({ status: 'Transaction Add Failed', error });
       }
     });

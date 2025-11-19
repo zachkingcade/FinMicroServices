@@ -10,8 +10,6 @@ export class DatabaseHandler {
     //--------------------------------------------------------------------------------
     //Member Varibles
     //--------------------------------------------------------------------------------
-
-    //member varibles
     connectedStatus: boolean = false;
     db!: sqlite3.Database;
     log: Logger;
@@ -34,6 +32,7 @@ export class DatabaseHandler {
     constructor() {
         this.log = WLog.getLogger();
     }
+
     /**
      * Startups database handler. Connects to the database and creates tables if their not already there.
      * @returns a promise that returns nothing. It resolves when the operation is done but returns no data. 
@@ -42,7 +41,7 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db = new sqlite3.Database('./AccountsServiceDatabase.db', async err => {
                 if (err) {
-                    this.log.error('Error opening database:', err.message)
+                    this.log.error(`Error opening database: ${err.message}`)
                     reject(err);
                 } else {
                     this.log.info('Connected to the SQLite database.')
@@ -51,15 +50,21 @@ export class DatabaseHandler {
                 }
             });
         })
-        this.connectedStatus = true;
         this.log.info('SQLite database startup complete!')
     }
 
+    /**
+     * Checks connected status
+     * @returns connected status
+     */
     checkConnectedStatus(): boolean {
         return this.connectedStatus;
     }
 
-    //Creates the tables needed for basic operation if they have not already been created
+    /**
+     * Creates tables if they do not already exist
+     * @returns a promise that will return nothing
+     */
     async createTablesIfNotExist(): Promise<void> {
         await new Promise<void>((resolve, reject) => {
             this.db.run(
@@ -73,7 +78,7 @@ export class DatabaseHandler {
             )`,
                 err => {
                     if (err) {
-                        this.log.error('Error creating chart_of_accounts:', err.message);
+                        this.log.error(`Error creating chart_of_accounts: [${err.message}]`);
                         reject(err);
                     } else {
                         this.log.info('Chart_of_accounts table created or already exists.')
@@ -94,7 +99,7 @@ export class DatabaseHandler {
             )`,
                 err => {
                     if (err) {
-                        this.log.error('Error creating account_types:', err.message);
+                        this.log.error(`Error creating account_types: [${err.message}]`);
                         reject(err);
                     } else {
                         this.log.info('account_types table created or already exists.');
@@ -114,7 +119,7 @@ export class DatabaseHandler {
             )`,
                 err => {
                     if (err) {
-                        this.log.error('Error creating type_classes:', err.message);
+                        this.log.error(`Error creating type_classes: [${err.message}]`);
                         reject(err);
                     } else {
                         this.log.info('type_classes table created or already exists.');
@@ -132,13 +137,13 @@ export class DatabaseHandler {
                 if (results.length) {
                     resolve();
                 } else {
-                    await this.addTypeClass("Asset","+","-");
-                    await this.addTypeClass("Liability","-","+");
-                    await this.addTypeClass("Equity","-","+");
+                    await this.addTypeClass("Asset", "+", "-");
+                    await this.addTypeClass("Liability", "-", "+");
+                    await this.addTypeClass("Equity", "-", "+");
                     resolve();
                 }
             } catch (error) {
-                reject(`Error encountered checking type class for seeded data: ${error}`);
+                reject(`Error encountered checking type class for seeded data: [${error}]`);
             }
         })
     }
@@ -188,7 +193,7 @@ export class DatabaseHandler {
                 newInsertStatement,
                 err => {
                     if (err) {
-                        this.log.error(`Error inserting Account with data: accountDescription [${accountDescription}], accountType [${accountType}], notes [${notes}]`, err.message);
+                        this.log.error(`Error inserting Account with data: accountDescription [${accountDescription}], accountType [${accountType}], notes [${notes}]: [${err.message}]`);
                         reject(err);
                     } else {
                         this.log.info(`Account [${accountSelectable}] added successfully!`);
@@ -219,7 +224,7 @@ export class DatabaseHandler {
                 newInsertStatement,
                 err => {
                     if (err) {
-                        this.log.error(`Error inserting Account Type with data:typeDescription [${typeDescription}],notes [${notes}]`, err.message);
+                        this.log.error(`Error inserting Account Type with data:typeDescription [${typeDescription}],notes [${notes}]: [${err.message}]`);
                         reject(err);
                     } else {
                         this.log.info(`Account Type [${typeDescription}] added successfully!`);
@@ -232,10 +237,10 @@ export class DatabaseHandler {
     }
 
     /**
- * Adds account class to the database. This method is private and meant to only be used for seeding data.
- * @param typeDescription describes the new type account class
- * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
- */
+     * Adds account class to the database. This method is private and meant to only be used for seeding data.
+     * @param typeDescription describes the new type account class
+     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
+     */
     private async addTypeClass(classDescription: string, creditEffect: "+" | "-", debitEffect: "+" | "-"): Promise<void> {
         // Construct insert statement
         let newInsertStatement: string = "";
@@ -248,7 +253,7 @@ export class DatabaseHandler {
                 newInsertStatement,
                 err => {
                     if (err) {
-                        this.log.error(`Error inserting Type class with data:classDescription [${classDescription}]`, err.message);
+                        this.log.error(`Error inserting Type class with data:classDescription [${classDescription}]: [${err.message}]`);
                         reject(err);
                     } else {
                         this.log.info(`Type Class [${classDescription}] added successfully!`);
@@ -292,7 +297,7 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db.all(this.selectAccountALL, [], (err, rows) => {
                 if (err) {
-                    this.log.error("Error retrieving all account records from the database ", err.message);
+                    this.log.error(`Error retrieving all account records from the database: [${err.message}]`);
                     reject(err);
                 } else {
                     results = rows;
@@ -313,7 +318,7 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db.all(this.selectTypeALL, [], (err, rows) => {
                 if (err) {
-                    this.log.error("Error retrieving all account type records from the database ", err.message);
+                    this.log.error(`Error retrieving all account type records from the database: [${err.message}]`);
                     reject(err);
                 } else {
                     results = rows;
@@ -333,7 +338,7 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db.all(this.selectTypeClassAll, [], (err, rows) => {
                 if (err) {
-                    this.log.error("Error retrieving all account type records from the database ", err.message);
+                    this.log.error(`Error retrieving all account type records from the database: [${err.message}]`);
                     reject(err);
                 } else {
                     results = rows;
@@ -354,7 +359,7 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db.get(this.selectAccountById, [id], (err, row) => {
                 if (err) {
-                    this.log.error(`Error retrieving account by Id [${id}] from the database `, err.message);
+                    this.log.error(`Error retrieving account by Id [${id}] from the database: [${err.message}]`);
                     reject(err);
                 } else {
                     result = row;
@@ -375,7 +380,7 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db.get(this.selectTypeById, [id], (err, row) => {
                 if (err) {
-                    this.log.error(`Error retrieving type by Id [${id}] from the database `, err.message);
+                    this.log.error(`Error retrieving type by Id [${id}] from the database: [${err.message}]`);
                     reject(err);
                 } else {
                     console.log(row);
@@ -397,7 +402,7 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db.get(this.selectTypeClassById, [id], (err, row) => {
                 if (err) {
-                    this.log.error(`Error retrieving type class by Id [${id}] from the database ${err.message}`);
+                    this.log.error(`Error retrieving type class by Id [${id}] from the database: [${err.message}]`);
                     reject(err);
                 } else {
                     console.log(row);
@@ -419,7 +424,7 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db.get(this.selectTypeByDescription, [description], (err, row) => {
                 if (err) {
-                    this.log.error(`Error retrieving type by description [${description}] from the database `, err.message);
+                    this.log.error(`Error retrieving type by description [${description}] from the database: [${err.message}] `);
                     reject(err);
                 } else {
                     console.log(row);
