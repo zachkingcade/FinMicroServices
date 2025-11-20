@@ -15,12 +15,19 @@ import { TransactionData } from '../../services/transaction-data';
   styleUrl: './accounts.scss',
 })
 export class Accounts {
+  //--------------------------------------------------------------------------------
+  //Member Varibles
+  //--------------------------------------------------------------------------------
   accountsList: AccountPresentable[];
   accountTypeList: AccountType[];
   @ViewChild('typeSelection') typeSelection!: MtxSelect;
   @ViewChild('inputDescription') inputDescription!: ElementRef<HTMLInputElement>;
   @ViewChild('inputNotes') inputNotes!: ElementRef<HTMLInputElement>;
 
+
+  //--------------------------------------------------------------------------------
+  //Class Setup
+  //--------------------------------------------------------------------------------
   constructor(
     private accountsData: AccountsData,
     private transactionData: TransactionData,
@@ -31,6 +38,9 @@ export class Accounts {
     this.accountTypeList = [];
   }
 
+  //--------------------------------------------------------------------------------
+  // Data Functions
+  //--------------------------------------------------------------------------------
   ngOnInit(): void {
     this.fetchData();
   }
@@ -71,7 +81,7 @@ export class Accounts {
             let accountBalance: number = await new Promise<number>((resolve, reject) => {
               this.transactionData.getCurrentAccountBalance(item.account_code).subscribe({
                 next: (response) => {
-                  console.log(`Gained Balance ${response}`) 
+                  console.log(`Gained Balance ${response}`)
                   resolve(response);
                 },
                 error: (error) => {
@@ -125,12 +135,6 @@ export class Accounts {
     }
   }
 
-  resetManualInput() {
-    this.typeSelection.value = "";
-    this.inputDescription.nativeElement.value = "";
-    this.inputNotes.nativeElement.value = "";
-  }
-
   validateNewAccount(newData: AccountDTO): boolean {
     let result: boolean = true;
     if (newData.account_description == "") {
@@ -142,5 +146,15 @@ export class Accounts {
       result = false;
     }
     return result;
+  }
+
+
+  //--------------------------------------------------------------------------------
+  // UI Functions
+  //--------------------------------------------------------------------------------
+  resetManualInput() {
+    this.typeSelection.value = "";
+    this.inputDescription.nativeElement.value = "";
+    this.inputNotes.nativeElement.value = "";
   }
 }

@@ -1,5 +1,7 @@
+<!-- Navigation Bar -->
 <app-nav-bar></app-nav-bar>
 
+<!-- Table that displays current pending Transactions -->
 <form [formGroup]="tableForm">
     <div id="transactionDivs">
         <table id="ledgerTable">
@@ -51,8 +53,10 @@
                     <td><input type="text" id="pendingTransactionNotes" formControlName="notes"></td>
                     <!-- Dedicated column for buttons -->
                     <td id="actionButtonsColumn">
-                        <button class="actionButtons" id="trash" (click)="confirmDeletion(i)"><i-feather name="trash-2"></i-feather></button>
-                        <button class="actionButtons" id="split" (click)="openSplitModal(i)"><i-feather name="columns"></i-feather></button>
+                        <button class="actionButtons" id="trash" (click)="confirmDeletion(i)">
+                            <i-feather name="trash-2"></i-feather></button>
+                        <button class="actionButtons" id="split" (click)="openSplitModal(i)">
+                            <i-feather name="columns"></i-feather></button>
                     </td>
                 </tr>
                 }
@@ -60,6 +64,7 @@
         </table>
     </div>
 
+    <!-- Zone for actions buttons on the page allowing submission and file upload -->
     <div id="formButtons">
         <!-- File input button -->
         <input type="file" class="file-input" (change)="onFileSelected($event)" #fileInput>

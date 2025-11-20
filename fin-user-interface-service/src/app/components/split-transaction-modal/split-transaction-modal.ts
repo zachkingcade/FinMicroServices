@@ -23,11 +23,18 @@ type SplitGroup = FormGroup<{
   styleUrl: './split-transaction-modal.scss',
 })
 export class SplitTransactionModal {
+  //--------------------------------------------------------------------------------
+  //Member Varibles
+  //--------------------------------------------------------------------------------
   form: FormGroup;
   public originalTransaction: PendingTransaction;
   public accountOptions: Account[];
   private accountTypeList: AccountType[];
   private typeClassList: TypeClass[];
+
+  //--------------------------------------------------------------------------------
+  //Class Setup
+  //--------------------------------------------------------------------------------
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: {
@@ -53,10 +60,16 @@ export class SplitTransactionModal {
     this.addSplit();
   }
 
+  /**
+   * Gets splits from forarray, can be called as object
+   */
   get splits(): FormArray<SplitGroup> {
     return this.form.get('splits') as FormArray<SplitGroup>;
   }
 
+  /**
+   * Adds split row to the table
+   */
   addSplit() {
     this.splits.push(
       this.formbuilder.group({
@@ -68,21 +81,76 @@ export class SplitTransactionModal {
     );
   }
 
+  /**
+   * Removes split row from the table
+   * @param index which row to remove
+   */
   removeSplit(index: number) {
     this.splits.removeAt(index);
   }
 
+  /**
+   * Totals split rows' values
+   * @returns calculated total 
+   */
   total(): number {
     return this.splits.controls
       .map(c => c.get('amount')?.value || 0)
       .reduce((a, b) => a + b, 0);
   }
 
+  /**
+   * Determines effect that a debit or credit will have on a provided account
+   * @param account_code The account to check effect on
+   * @param creditOrDebit Eather the effect being applied is debit or credit
+   * @returns positive or negative character to represent effect
+   */
+  determineEffect(account_code: number, creditOrDebit: "credit" | "debit"): '+' | '-' {
+    let account = this.accountOptions.find(account => account.account_code == account_code);
+    if (!account) {
+      console.error("Error: account provided not found in account type list.")
+    }
+
+    let accountType = this.accountTypeList.find(type => type.type_code == account!.account_type);
+    if (!accountType) {
+      console.error("Error: account type not found in account type list.")
+    }
+
+    let typeClass = this.typeClassList.find(tclass => tclass.class_code == accountType!.type_class);
+    if (!typeClass) {
+      console.error("Error: account type class not found in type class list.")
+    }
+
+    return creditOrDebit == "credit" ? typeClass!.credit_effect : typeClass!.debit_effect;
+  }
+
+  /**
+   * Limits entered values to be at most 2 decimal places long
+   * @param i The split row to reformat
+   */
+  limitDecimals(i: number) {
+    const ctrl = this.splits.at(i).get('amount');
+    if (!ctrl) return;
+    let value = ctrl.value?.toString() ?? "";
+    if (value.includes(".")) {
+      const [intPart, decPart] = value.split(".");
+      ctrl.setValue(Number(decPart.length > 2 ? `${intPart}.${decPart.substring(0, 2)}` : value), { emitEvent: false });
+    }
+  }
+
+  //--------------------------------------------------------------------------------
+  // Button Functions
+  //--------------------------------------------------------------------------------
+
+  /**
+   * Event handler for the user clicking the submit button. This checks that all data has been entered in a valid manner.
+   * If it has it will create a transaction DTO object and send it back to the calling page/component
+   */
   confirm() {
     const total = this.total();
 
     if (total !== this.originalTransaction.amount) {
-      this.toaster.error(`Split amounts must add up to $${this.originalTransaction.amount}.`);
+      this.toaster.error(`Split amounts must add up to ${this.originalTransaction.amount}.`);
       return;
     }
 
@@ -106,44 +174,18 @@ export class SplitTransactionModal {
         amount: this.total(),
         credit_account: credit!,
         debit_account: debit!,
-        notes: notes? notes : ""
+        notes: notes ? notes : ""
       })
     }
 
     this.dialogRef.close(results);
   }
 
+  /**
+   * Event handler for the user clicking the cancel button. Returns a null to the calling page/component
+   */
   cancel() {
     this.dialogRef.close(null);
-  }
-
-  determineEffect(account_code: number, creditOrDebit: "credit" | "debit"): '+' | '-' {
-    let account = this.accountOptions.find(account => account.account_code == account_code);
-    if (!account) {
-      console.error("Error: account provided not found in account type list.")
-    }
-
-    let accountType = this.accountTypeList.find(type => type.type_code == account!.account_type);
-    if (!accountType) {
-      console.error("Error: account type not found in account type list.")
-    }
-
-    let typeClass = this.typeClassList.find(tclass => tclass.class_code == accountType!.type_class);
-    if (!typeClass) {
-      console.error("Error: account type class not found in type class list.")
-    }
-
-    return creditOrDebit == "credit" ? typeClass!.credit_effect : typeClass!.debit_effect;
-  }
-
-  limitDecimals(i: number) {
-    const ctrl = this.splits.at(i).get('amount');
-    if (!ctrl) return;
-    let value = ctrl.value?.toString() ?? "";
-    if (value.includes(".")) {
-      const [intPart, decPart] = value.split(".");
-      ctrl.setValue(Number(decPart.length > 2 ? `${intPart}.${decPart.substring(0, 2)}` : value), { emitEvent: false });
-    }
   }
 
 }

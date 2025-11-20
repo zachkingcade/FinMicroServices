@@ -12,8 +12,13 @@ export class Confirmation {
     public dialogRef: MatDialogRef<Confirmation>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
-
-  formatMessage(msg: string): string {
+  
+/**
+ * Formats message to allow displaying of newlines given in the provided message
+ * @param msg Message to properly format
+ * @returns message with new lines replaced with html breaks
+ */
+formatMessage(msg: string): string {
   return msg.replace(/\n/g, '<br>');
 }
 }

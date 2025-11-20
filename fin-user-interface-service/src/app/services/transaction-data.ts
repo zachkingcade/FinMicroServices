@@ -10,6 +10,10 @@ export class TransactionData {
 
   constructor(private http: HttpClient) { }
 
+  //--------------------------------------------------------------------------------
+  // HTTP GET
+  //--------------------------------------------------------------------------------
+
   getAllTransactions(): Observable<Transaction[]> {
     return this.http.get<Transaction[]>("/transaction/getAll");
   }
@@ -21,6 +25,10 @@ export class TransactionData {
   getCurrentAccountBalance(accountNumber: number): Observable<number> {
     return this.http.get<number>(`/transaction/analysis/currentbalanceofaccount/${accountNumber}`);
   }
+
+  //--------------------------------------------------------------------------------
+  // HTTP POST
+  //--------------------------------------------------------------------------------
 
   postNewTransaction(bodyData: TransactionDTO): Observable<TransactionAddReturn> {
     return this.http.post<TransactionAddReturn>("/transaction/add", bodyData);

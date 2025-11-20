@@ -18,6 +18,9 @@ import { Confirmation } from '../../components/confirmation/confirmation';
   styleUrl: './ledger.scss',
 })
 export class Ledger implements OnInit {
+  //--------------------------------------------------------------------------------
+  //Member Varibles
+  //--------------------------------------------------------------------------------
   originalTransactionData: Transaction[] = [];
   transactionList: TransactionPresentable[];
   accountsList: Account[];
@@ -28,6 +31,9 @@ export class Ledger implements OnInit {
   @ViewChild('debitSelection') debitSelection!: MtxSelect;
   @ViewChild('inputNotes') inputNotes!: ElementRef<HTMLInputElement>;
 
+  //--------------------------------------------------------------------------------
+  //Class Setup
+  //--------------------------------------------------------------------------------
   constructor(
     private transactionData: TransactionData,
     private accountData: AccountsData,
@@ -38,6 +44,10 @@ export class Ledger implements OnInit {
     this.transactionList = [];
     this.accountsList = [];
   }
+
+  //--------------------------------------------------------------------------------
+  // Data Functions
+  //--------------------------------------------------------------------------------
 
   ngOnInit(): void {
     this.fetchData();
@@ -129,15 +139,6 @@ export class Ledger implements OnInit {
     }
   }
 
-  resetManualInput() {
-    this.inputDate.nativeElement.value = "";
-    this.inputDescription.nativeElement.value = "";
-    this.inputAmount.nativeElement.value = "";
-    this.creditSelection.value = "";
-    this.debitSelection.value = "";
-    this.inputNotes.nativeElement.value = "";
-  }
-
   validateNewTransaction(newData: TransactionDTO): boolean {
     let result: boolean = true;
     if (newData.trans_date == "") {
@@ -163,30 +164,44 @@ export class Ledger implements OnInit {
     return result;
   }
 
-    confirmDeletion(itemTodeleteCode: number) {
-      let itemTodelete: Transaction = this.originalTransactionData.find( item => item.trans_code == itemTodeleteCode)!;
-      const itemDescription = `${itemTodelete.trans_date}] [${itemTodelete.trans_description}] [${itemTodelete.amount}`;
-      const dialogRef = this.dialog.open(Confirmation, {
-        data: {
-          title: 'Hold up ✋',
-          message: `Are you sure you want to delete [${itemDescription}]? ` +
+
+  //--------------------------------------------------------------------------------
+  // UI Functions
+  //--------------------------------------------------------------------------------
+
+  resetManualInput() {
+    this.inputDate.nativeElement.value = "";
+    this.inputDescription.nativeElement.value = "";
+    this.inputAmount.nativeElement.value = "";
+    this.creditSelection.value = "";
+    this.debitSelection.value = "";
+    this.inputNotes.nativeElement.value = "";
+  }
+
+  confirmDeletion(itemTodeleteCode: number) {
+    let itemTodelete: Transaction = this.originalTransactionData.find(item => item.trans_code == itemTodeleteCode)!;
+    const itemDescription = `${itemTodelete.trans_date}] [${itemTodelete.trans_description}] [${itemTodelete.amount}`;
+    const dialogRef = this.dialog.open(Confirmation, {
+      data: {
+        title: 'Hold up ✋',
+        message: `Are you sure you want to delete [${itemDescription}]? ` +
           "\n\n This can throw off the balance. This cannot be undone."
-        }
-      });
-  
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this.transactionData.postTransactionRemoval(itemTodelete).subscribe({
-            next: (response) => {
-              this.toaster.success(response.status, `Trasaction [${itemDescription}] deleted successfully!`);
-              this.fetchData();
-            },
-            error: (error) => {
-              this.toaster.error(`Error deleting transaction [${itemDescription}] : [${error}]`);
-            }
-          })
-        }
-      });
-    }
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.transactionData.postTransactionRemoval(itemTodelete).subscribe({
+          next: (response) => {
+            this.toaster.success(response.status, `Trasaction [${itemDescription}] deleted successfully!`);
+            this.fetchData();
+          },
+          error: (error) => {
+            this.toaster.error(`Error deleting transaction [${itemDescription}] : [${error}]`);
+          }
+        })
+      }
+    });
+  }
 
 }

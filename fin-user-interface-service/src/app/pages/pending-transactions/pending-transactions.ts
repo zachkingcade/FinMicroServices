@@ -38,6 +38,9 @@ interface rowReturnData {
   styleUrl: './pending-transactions.scss',
 })
 export class PendingTransactions {
+  //--------------------------------------------------------------------------------
+  //Member Varibles
+  //--------------------------------------------------------------------------------
   transactionPendingList: PendingTransaction[];
   accountsList: Account[];
   accountTypeList: AccountType[];
@@ -47,6 +50,9 @@ export class PendingTransactions {
   currentlySelectedFileName: string = "";
   @ViewChild('fileInput') fileInput!: ElementRef;
 
+  //--------------------------------------------------------------------------------
+  //Class Setup
+  //--------------------------------------------------------------------------------
   constructor(
     private transactionData: TransactionData,
     private accountData: AccountsData,
@@ -63,6 +69,10 @@ export class PendingTransactions {
       rows: this.formBuilder.array<RowForm>([])
     });
   }
+
+  //--------------------------------------------------------------------------------
+  // Data Functions
+  //--------------------------------------------------------------------------------
 
   ngOnInit(): void {
     this.fetchData();
@@ -219,6 +229,10 @@ export class PendingTransactions {
       reader.readAsText(file);
     }
   }
+
+  //--------------------------------------------------------------------------------
+  // UI Functions
+  //--------------------------------------------------------------------------------
 
   clearFileInput() {
     this.fileInput.nativeElement.value = null;

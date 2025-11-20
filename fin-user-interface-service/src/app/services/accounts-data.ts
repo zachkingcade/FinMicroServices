@@ -12,6 +12,10 @@ export class AccountsData {
 
   constructor(private http: HttpClient) { }
 
+  //--------------------------------------------------------------------------------
+  // HTTP GET
+  //--------------------------------------------------------------------------------
+
   typesClassGetAll(): Observable<TypeClass[]> {
     return this.http.get<TypeClass[]>(`/type/class/getall`);
   }
@@ -23,6 +27,10 @@ export class AccountsData {
   accountsGetAll(): Observable<Account[]> {
     return this.http.get<Account[]>(`/account/getall`);
   }
+
+  //--------------------------------------------------------------------------------
+  // HTTP POST
+  //--------------------------------------------------------------------------------
 
   postNewAccountType(bodyData: AccountTypeDTO): Observable<AccountTypeAddReturn> {
     return this.http.post<AccountTypeAddReturn>("/type/add", bodyData);

@@ -14,12 +14,18 @@ import { ToastrService } from 'ngx-toastr';
   styleUrl: './account-types.scss',
 })
 export class AccountTypes {
+  //--------------------------------------------------------------------------------
+  //Member Varibles
+  //--------------------------------------------------------------------------------
   accountsTypeList: AccountTypePresentable[];
   accountsClassList: TypeClass[];
   @ViewChild('classSelection') classSelection!: MtxSelect;
   @ViewChild('inputDescription') inputDescription!: ElementRef<HTMLInputElement>;
   @ViewChild('inputNotes') inputNotes!: ElementRef<HTMLInputElement>;
 
+  //--------------------------------------------------------------------------------
+  //Class Setup
+  //--------------------------------------------------------------------------------
   constructor(
     private accountsData: AccountsData,
     private cdr: ChangeDetectorRef,
@@ -29,10 +35,20 @@ export class AccountTypes {
     this.accountsClassList = [];
   }
 
+  //--------------------------------------------------------------------------------
+  // Data Functions
+  //--------------------------------------------------------------------------------
+
+  /**
+   * Life Cycle Hook that runs when the component is first initalized
+   */
   ngOnInit(): void {
     this.fetchData();
   }
 
+  /**
+   * Fetchs data from the relavent microservices that are needed for this page
+   */
   fetchData(): void {
     this.accountsData.accountTypesGetAll().subscribe({
       next: async (response) => {
@@ -41,7 +57,7 @@ export class AccountTypes {
         console.log(response);
       },
       error: (error) => {
-        console.error('Error fetching data:', error);
+        console.error(`Error fetching account type data: ${error}`);
       }
     });
     this.accountsData.typesClassGetAll().subscribe({
@@ -51,11 +67,16 @@ export class AccountTypes {
         console.log(response);
       },
       error: (error) => {
-        console.error('Error fetching data:', error);
+        console.error(`Error fetching type class data: ${error}`);
       }
     });
   }
 
+  /**
+   * Takes a list of account types and changes their type_class from the forien key to the type classes description
+   * @param list array of account type data to format
+   * @returns The formatted array of account type data
+   */
   async makeDataPresentable(list: AccountType[]) {
     let classList: TypeClass[] = [];
     let resultingList: AccountTypePresentable[] = [];
@@ -110,12 +131,6 @@ export class AccountTypes {
     }
   }
 
-  resetManualInput() {
-    this.classSelection.value = "";
-    this.inputDescription.nativeElement.value = "";
-    this.inputNotes.nativeElement.value = "";
-  }
-
   validateNewAccountType(newData: AccountTypeDTO): boolean {
     let result: boolean = true;
     if (newData.type_class == 0 || newData.type_class == null) {
@@ -127,6 +142,16 @@ export class AccountTypes {
       result = false;
     }
     return result;
+  }
+
+  //--------------------------------------------------------------------------------
+  // UI Functions
+  //--------------------------------------------------------------------------------
+
+  resetManualInput() {
+    this.classSelection.value = "";
+    this.inputDescription.nativeElement.value = "";
+    this.inputNotes.nativeElement.value = "";
   }
 
 }
