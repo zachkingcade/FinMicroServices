@@ -9,12 +9,24 @@ import { AccountService } from './AccountService.js'
 import { TypeClass } from '../types/TypeClass.js'
 
 export class ExpressHandler {
+
+  //--------------------------------------------------------------------------------
+  //Member Varibles
+  //--------------------------------------------------------------------------------
   private static instance: ExpressHandler | null = null
   private app = express()
   private log!: Logger
   private database!: DatabaseHandler
   private accountService!: AccountService;
 
+  //--------------------------------------------------------------------------------
+  //Class Setup
+  //--------------------------------------------------------------------------------
+
+  /**
+   * Gets the singleton instance if it exists and creates it if it does not
+   * @returns singeton instance
+   */
   static async getInstance(): Promise<ExpressHandler> {
     if (this.instance) {
       return this.instance
@@ -40,7 +52,7 @@ export class ExpressHandler {
           resolve()
         } catch (err) {
           newInstance.log.error(
-            `Unable to establish listener on port [${PORT}]`
+            `Unable to establish listener on port [${PORT}]: [${err}]`
           )
           reject()
         }
@@ -51,11 +63,15 @@ export class ExpressHandler {
     return newInstance
   }
 
+  //--------------------------------------------------------------------------------
+  // HTTP Posts
+  //--------------------------------------------------------------------------------
+
   setupPosts() {
     this.app.post('/transaction/add', async (req, res) => {
       try {
         let newTransaction: Transaction = req.body
-        this.log.info(`Recieved command: /account/add/ with data ${newTransaction}`);
+        this.log.info(`Recieved command: /account/add/ with data ${JSON.stringify(newTransaction)}`);
         await this.database.addTransaction(newTransaction.trans_date, newTransaction.trans_description, newTransaction.amount, newTransaction.credit_account, newTransaction.debit_account, newTransaction.notes);
         res.status(201).json({ status: 'Transaction Added', newTransaction })
       } catch (error) {
@@ -67,11 +83,11 @@ export class ExpressHandler {
     this.app.post('/transaction/pending/add', async (req, res) => {
       try {
         let newPendingTransaction: PendingTransaction = req.body
-        this.log.info(`Recieved command:/transaction/pending/add with data ${newPendingTransaction}`);
+        this.log.info(`Recieved command:/transaction/pending/add with data ${JSON.stringify(newPendingTransaction)}`);
         await this.database.addPendingTransaction(newPendingTransaction.trans_date, newPendingTransaction.trans_description, newPendingTransaction.amount);
         res.status(201).json({ status: 'Pending Transaction Added', newPendingTransaction })
       } catch (error) {
-        this.log.error("Error http post: /transaction/pending/add, unable to add Pending transaction");
+        this.log.error(`Error http post: /transaction/pending/add, unable to add Pending transaction: ${error}`);
         res.status(500).json({ status: 'Pending Transaction Add Failed', error });
       }
     })
@@ -79,11 +95,11 @@ export class ExpressHandler {
     this.app.post('/transaction/remove', async (req, res) => {
       try {
         let oldTransaction: Transaction = req.body
-        this.log.info(`Recieved command: /transaction/remove with data ${oldTransaction}`);
+        this.log.info(`Recieved command: /transaction/remove with data ${JSON.stringify(oldTransaction)}`);
         await this.database.removeTransaction(oldTransaction.trans_code!)
         res.status(201).json({ status: 'Transaction removed', oldTransaction })
       } catch (error) {
-        this.log.error("Error http post: /transaction/remove, unable to remove transaction");
+        this.log.error(`Error http post: /transaction/remove, unable to remove transaction: ${error}`);
         res.status(500).json({ status: 'Transaction remove Failed', error });
       }
     });
@@ -91,11 +107,11 @@ export class ExpressHandler {
     this.app.post('/transaction/pending/remove', async (req, res) => {
       try {
         let oldPendingTransaction: PendingTransaction = req.body
-        this.log.info(`Recieved command: /transaction/pending/remove with data ${oldPendingTransaction}`);
+        this.log.info(`Recieved command: /transaction/pending/remove with data ${JSON.stringify(oldPendingTransaction)}`);
         await this.database.removePendingTransaction(oldPendingTransaction.trans_code!)
         res.status(201).json({ status: 'Pending Transaction removed', oldPendingTransaction })
       } catch (error) {
-        this.log.error("Error http post: /transaction/pending/remove, unable to remove Pending transaction");
+        this.log.error(`Error http post: /transaction/pending/remove, unable to remove Pending transaction: ${error}`);
         res.status(500).json({ status: 'Pending Transaction remove Failed', error });
       }
     })
@@ -111,7 +127,7 @@ export class ExpressHandler {
         }
         res.status(201).json({ status: `Pending Transactions Added by csv. [${pendingTransactionArray.length}] new pending transactions.` });
       } catch (error) {
-        this.log.error("Error http post: /transaction/pending/addbycsv, unable to add pending transactions");
+        this.log.error(`Error http post: /transaction/pending/addbycsv, unable to add pending transactions: ${error}`);
         res.status(500).json({ status: 'Pending Transaction Add by csv Failed', error });
       }
     })
@@ -119,7 +135,7 @@ export class ExpressHandler {
     this.app.post('/transaction/pending/convert', async (req, res) => {
       try {
         let pendingTransactionsToConvert: Transaction[] = req.body
-        this.log.info(`Recieved command: /transaction/pending/convert with data [${pendingTransactionsToConvert}]`);
+        this.log.info(`Recieved command: /transaction/pending/convert with data [${JSON.stringify(pendingTransactionsToConvert)}]`);
         let amountConverted = 0;
         for (let trans of pendingTransactionsToConvert) {
           try {
@@ -131,13 +147,15 @@ export class ExpressHandler {
         }
         res.status(201).json({ status: `Pending Transactions converted [${amountConverted}]` });
       } catch (error) {
-        this.log.error("Error http post: /transaction/pending/convert, unable to convert Pending transaction");
+        this.log.error(`Error http post: /transaction/pending/convert, unable to convert Pending transaction: ${error}`);
         res.status(500).json({ status: 'Pending Transaction convert Failed', error });
       }
     })
-
-
   }
+
+  //--------------------------------------------------------------------------------
+  // HTTP GETs
+  //--------------------------------------------------------------------------------
 
   setupGets() {
     this.app.get('/transaction/getall', async (req, res) => {
@@ -145,7 +163,7 @@ export class ExpressHandler {
         let results: Transaction[] = await this.database.getAllTransactions();
         res.json(results)
       } catch (error) {
-        this.log.error("Error http get: /transaction/getall, unable to get all transactions");
+        this.log.error(`Error http get: /transaction/getall, unable to get all transactions: ${error}`);
         res.status(500).json({ status: "Error http get: /transaction/getall, unable to get all transactions", error });
       }
     })
@@ -155,7 +173,7 @@ export class ExpressHandler {
         let results: PendingTransaction[] = await this.database.getAllPendingTransactions();
         res.json(results)
       } catch (error) {
-        this.log.error("Error http get: /transaction/pending/getall, unable to get all pending transactions");
+        this.log.error(`Error http get: /transaction/pending/getall, unable to get all pending transactions: ${error}`);
         res.status(500).json({ status: "Error http get:/transaction/pending/getall, unable to get all pending transactions", error });
       }
     })
@@ -167,7 +185,7 @@ export class ExpressHandler {
         let results: Transaction[] = await this.database.getAllTransactionsByAffectingAccount(Number(accountCode));
         res.json(results)
       } catch (error) {
-        this.log.error(`Error http get: /transaction/getbyaccount, unable to get all transactions with account [${req.params.accountCode}]`);
+        this.log.error(`Error http get: /transaction/getbyaccount, unable to get all transactions with account [${req.params.accountCode}]: ${error}`);
         res.status(500).json({ status: `Error http get: /transaction/getbyaccount, unable to get all transactions with account [${req.params.accountCode}]`, error });
       }
     })
@@ -213,9 +231,7 @@ export class ExpressHandler {
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //
   // Logic Methods
-  //
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   //Note expected csv for: Date,Description,Original Description,Category,Amount,Status

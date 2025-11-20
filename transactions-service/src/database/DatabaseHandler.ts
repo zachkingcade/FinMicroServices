@@ -34,7 +34,7 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db = new sqlite3.Database('./TransactionsServiceDatabase.db', async err => {
                 if (err) {
-                    this.log.error('Error opening database:', err.message)
+                    this.log.error(`Error opening database: [${err.message}]`);
                     reject(err);
                 } else {
                     this.log.info('Connected to the SQLite database.')
@@ -47,6 +47,10 @@ export class DatabaseHandler {
         this.log.info('SQLite database startup complete!')
     }
 
+    /**
+     * Checks connected status
+     * @returns connected status 
+     */
     checkConnectedStatus(): boolean {
         return this.connectedStatus;
     }
@@ -66,7 +70,7 @@ export class DatabaseHandler {
             )`,
                 err => {
                     if (err) {
-                        this.log.error('Error creating ledger_transactions:', err.message);
+                        this.log.error(`Error creating ledger_transactions: [${err.message}]`);
                         reject(err);
                     } else {
                         this.log.info('ledger_transactions table created or already exists.')
@@ -85,7 +89,7 @@ export class DatabaseHandler {
             )`,
                 err => {
                     if (err) {
-                        this.log.error('Error creating pending_transactions:', err.message);
+                        this.log.error(`Error creating pending_transactions: [${err.message}]`);
                         reject(err);
                     } else {
                         this.log.info('pending_transactions table created or already exists.')
@@ -121,7 +125,7 @@ export class DatabaseHandler {
                 newInsertStatement,
                 err => {
                     if (err) {
-                        this.log.error(`Error inserting transaction with data: trans_date [${trans_date}], trans_description[${trans_description}], credit_account [${credit_account}], debit_account [${debit_account}],notes [${notes}]`, err.message);
+                        this.log.error(`Error inserting transaction with data: trans_date [${trans_date}], trans_description[${trans_description}], credit_account [${credit_account}], debit_account [${debit_account}],notes [${notes}]: ${err.message}`);
                         reject(err);
                     } else {
                         this.log.info(`Transaction [${trans_description}][${credit_account}][${debit_account}] added successfully!`);
@@ -236,7 +240,7 @@ export class DatabaseHandler {
         await new Promise<void>((resolve, reject) => {
             this.db.all(this.selectTransactionsByAffectingAccounts, [account_code, account_code], (err, rows) => {
                 if (err) {
-                    this.log.error(`Error retrieving all transaction records from the database that have account ${account_code}`, err.message);
+                    this.log.error(`Error retrieving all transaction records from the database that have account ${account_code}: ${err.message}`);
                     reject(err);
                 } else {
                     results = rows;
