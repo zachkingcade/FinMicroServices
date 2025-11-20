@@ -6,6 +6,7 @@ import { AccountType, AccountTypeDTO, AccountTypePresentable } from '../../types
 import { TypeClass } from '../../types/TypeClass';
 import { MtxSelect, MtxSelectModule } from '@ng-matero/extensions/select';
 import { ToastrService } from 'ngx-toastr';
+import { Campfire } from '../../services/campfire';
 
 @Component({
   selector: 'app-account-types',
@@ -29,7 +30,7 @@ export class AccountTypes {
   constructor(
     private accountsData: AccountsData,
     private cdr: ChangeDetectorRef,
-    private toaster: ToastrService
+    private campfire: Campfire
   ) {
     this.accountsTypeList = [];
     this.accountsClassList = [];
@@ -43,6 +44,7 @@ export class AccountTypes {
    * Life Cycle Hook that runs when the component is first initalized
    */
   ngOnInit(): void {
+    this.campfire.debug("Account types page init!");
     this.fetchData();
   }
 
@@ -54,20 +56,20 @@ export class AccountTypes {
       next: async (response) => {
         this.accountsTypeList = await this.makeDataPresentable(response);
         this.cdr.detectChanges();
-        console.log(response);
+        this.campfire.debug("Loaded account type data for account types page", response);
       },
       error: (error) => {
-        console.error(`Error fetching account type data: ${error}`);
+        this.campfire.errorAlert(`Error fetching account type data`, error);
       }
     });
     this.accountsData.typesClassGetAll().subscribe({
       next: async (response) => {
         this.accountsClassList = response;
         this.cdr.detectChanges();
-        console.log(response);
+        this.campfire.debug("Loaded type class data for account types page", response);
       },
       error: (error) => {
-        console.error(`Error fetching type class data: ${error}`);
+        this.campfire.errorAlert(`Error fetching type class data`, error);
       }
     });
   }
@@ -96,13 +98,13 @@ export class AccountTypes {
               }
               resultingList.push(newTypePresentable);
             } else {
-              console.log("Error");
+              this.campfire.quietError(`Unable to find type class for [${item.type_class}] returned [${classObject}] instead`);
             }
           }
           resolve();
         },
         error: (error) => {
-          console.error('Error fetching data:', error);
+          this.campfire.quietError('Error fetching class data for account types page', error);
           reject();
         }
       })
@@ -111,21 +113,21 @@ export class AccountTypes {
   }
 
   async submitNewAccountType() {
-    console.log("Submit new transaction");
-    let newAccoountType: AccountTypeDTO = {
+    let newAccountType: AccountTypeDTO = {
       type_class: this.classSelection.value,
       type_description: this.inputDescription.nativeElement.value,
       notes: this.inputNotes.nativeElement.value
     }
-    if (this.validateNewAccountType(newAccoountType)) {
-      let response = await this.accountsData.postNewAccountType(newAccoountType).subscribe({
+    this.campfire.debug("Sending new account Type", newAccountType)
+    if (this.validateNewAccountType(newAccountType)) {
+      let response = await this.accountsData.postNewAccountType(newAccountType).subscribe({
         next: (response) => {
           this.fetchData();
-          console.log(response);
+          this.campfire.debug("Posted new account type response",response);
           this.resetManualInput();
         },
         error: (error) => {
-          console.error('Error fetching data:', error);
+          this.campfire.errorAlert('Unable to add new account type, something went wrong!', error, newAccountType);
         }
       })
     }
@@ -134,11 +136,11 @@ export class AccountTypes {
   validateNewAccountType(newData: AccountTypeDTO): boolean {
     let result: boolean = true;
     if (newData.type_class == 0 || newData.type_class == null) {
-      this.toaster.error("Account Type must have a Equation Section.")
+      this.campfire.errorAlert("Account Type must have a Equation Section.");
       result = false;
     }
     if (newData.type_description == "") {
-      this.toaster.error("Account Type must have a Description.")
+      this.campfire.errorAlert("Account Type must have a Description.");
       result = false;
     }
     return result;
@@ -149,6 +151,7 @@ export class AccountTypes {
   //--------------------------------------------------------------------------------
 
   resetManualInput() {
+    this.campfire.debug("Resetting UI on Account Types Page");
     this.classSelection.value = "";
     this.inputDescription.nativeElement.value = "";
     this.inputNotes.nativeElement.value = "";

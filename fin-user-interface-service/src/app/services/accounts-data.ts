@@ -4,27 +4,34 @@ import { Observable } from 'rxjs';
 import { AccountType, AccountTypeAddReturn, AccountTypeDTO } from '../types/AccountType';
 import { Account, AccountAddReturn, AccountDTO } from '../types/Account';
 import { TypeClass } from '../types/TypeClass';
+import { Campfire } from './campfire';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AccountsData {
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private campfire: Campfire
+  ) { }
 
   //--------------------------------------------------------------------------------
   // HTTP GET
   //--------------------------------------------------------------------------------
 
   typesClassGetAll(): Observable<TypeClass[]> {
+    this.campfire.debug("Accounts Service Executing HTTP GET /type/class/getall");
     return this.http.get<TypeClass[]>(`/type/class/getall`);
   }
 
   accountTypesGetAll(): Observable<AccountType[]> {
+    this.campfire.debug("Accounts Service Executing HTTP GET /type/getall");
     return this.http.get<AccountType[]>(`/type/getall`);
   }
 
   accountsGetAll(): Observable<Account[]> {
+    this.campfire.debug("Accounts Service Executing HTTP GET /account/getall");
     return this.http.get<Account[]>(`/account/getall`);
   }
 
@@ -33,10 +40,12 @@ export class AccountsData {
   //--------------------------------------------------------------------------------
 
   postNewAccountType(bodyData: AccountTypeDTO): Observable<AccountTypeAddReturn> {
+    this.campfire.debug("Accounts Service Executing HTTP POST /type/add");
     return this.http.post<AccountTypeAddReturn>("/type/add", bodyData);
   }
 
-    postNewAccount(bodyData: AccountDTO): Observable<AccountAddReturn> {
+  postNewAccount(bodyData: AccountDTO): Observable<AccountAddReturn> {
+    this.campfire.debug("Accounts Service Executing HTTP POST /account/ad");
     return this.http.post<AccountAddReturn>("/account/add", bodyData);
   }
 

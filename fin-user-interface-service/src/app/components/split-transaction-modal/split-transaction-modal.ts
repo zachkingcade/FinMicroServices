@@ -8,6 +8,7 @@ import { MtxSelectModule } from '@ng-matero/extensions/select';
 import { AccountType } from '../../types/AccountType';
 import { TypeClass } from '../../types/TypeClass';
 import { ToastrService } from 'ngx-toastr';
+import { Campfire } from '../../services/campfire';
 
 type SplitGroup = FormGroup<{
   amount: FormControl<number>;
@@ -41,11 +42,11 @@ export class SplitTransactionModal {
       originalTransaction: PendingTransaction,
       accountOptions: Account[],
       accountTypeList: AccountType[],
-      typeClassList: TypeClass[]
+      typeClassList: TypeClass[],
     },
     private dialogRef: MatDialogRef<SplitTransactionModal>,
     private formbuilder: FormBuilder,
-    private toaster: ToastrService,
+    private campfire: Campfire
   ) {
     this.form = this.formbuilder.group({
       splits: this.formbuilder.array([])
@@ -103,22 +104,25 @@ export class SplitTransactionModal {
    * Determines effect that a debit or credit will have on a provided account
    * @param account_code The account to check effect on
    * @param creditOrDebit Eather the effect being applied is debit or credit
-   * @returns positive or negative character to represent effect
+   * @returns positive or negative character to represent effect, undefined if any part of the account package could not be found
    */
-  determineEffect(account_code: number, creditOrDebit: "credit" | "debit"): '+' | '-' {
+  determineEffect(account_code: number, creditOrDebit: "credit" | "debit"): '+' | '-' | undefined {
     let account = this.accountOptions.find(account => account.account_code == account_code);
     if (!account) {
-      console.error("Error: account provided not found in account type list.")
+      this.campfire.errorAlert("Account provided not found in account type list.");
+      return undefined;
     }
 
     let accountType = this.accountTypeList.find(type => type.type_code == account!.account_type);
     if (!accountType) {
-      console.error("Error: account type not found in account type list.")
+      this.campfire.errorAlert("Error: account type not found in account type list.");
+      return undefined;
     }
 
     let typeClass = this.typeClassList.find(tclass => tclass.class_code == accountType!.type_class);
     if (!typeClass) {
-      console.error("Error: account type class not found in type class list.")
+      this.campfire.errorAlert("Error: account type class not found in type class list.");
+      return undefined;
     }
 
     return creditOrDebit == "credit" ? typeClass!.credit_effect : typeClass!.debit_effect;
@@ -150,7 +154,7 @@ export class SplitTransactionModal {
     const total = this.total();
 
     if (total !== this.originalTransaction.amount) {
-      this.toaster.error(`Split amounts must add up to ${this.originalTransaction.amount}.`);
+      this.campfire.errorAlert(`Split amounts must add up to ${this.originalTransaction.amount}.`);
       return;
     }
 
@@ -158,7 +162,7 @@ export class SplitTransactionModal {
       const credit = this.splits.at(i).get("credit")?.value;
       const debit = this.splits.at(i).get("debit")?.value;
       if (!credit || !debit) {
-        this.toaster.error(`All splits must have a credit and debit account`);
+        this.campfire.errorAlert(`All splits must have a credit and debit account`);
         return;
       }
     }

@@ -10,6 +10,7 @@ import { ToastrService } from 'ngx-toastr';
 import { FeatherModule } from 'angular-feather';
 import { MatDialog } from '@angular/material/dialog';
 import { Confirmation } from '../../components/confirmation/confirmation';
+import { Campfire } from '../../services/campfire';
 
 @Component({
   selector: 'app-ledger',
@@ -38,8 +39,8 @@ export class Ledger implements OnInit {
     private transactionData: TransactionData,
     private accountData: AccountsData,
     private cdr: ChangeDetectorRef,
-    private toaster: ToastrService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private campfire: Campfire
   ) {
     this.transactionList = [];
     this.accountsList = [];
@@ -59,20 +60,20 @@ export class Ledger implements OnInit {
         this.originalTransactionData = response;
         this.transactionList = await this.makeDataPresentable(response);
         this.cdr.detectChanges();
-        console.log(response);
+        this.campfire.debug("Loaded transaction data for ledger page", response);
       },
       error: (error) => {
-        console.error('Error fetching data:', error);
+        this.campfire.errorAlert(`Error fetching transaction data`, error);
       }
     });
     this.accountData.accountsGetAll().subscribe({
       next: (response) => {
         this.accountsList = response;
         this.cdr.detectChanges();
-        console.log(response);
+        this.campfire.debug("Loaded account data for ledger page", response);
       },
       error: (error) => {
-        console.error('Error fetching data:', error);
+        this.campfire.errorAlert(`Error fetching account data`, error);
       }
     })
   }
@@ -100,13 +101,13 @@ export class Ledger implements OnInit {
               }
               resultingList.push(newTypePresentable);
             } else {
-              console.log("Error");
+              this.campfire.quietError(`Unable to find account for either [${item.credit_account}] or [${item.debit_account}] returned [${creditObject}] and [${debitObject}] instead`);
             }
           }
           resolve();
         },
         error: (error) => {
-          console.error('Error fetching data:', error);
+          this.campfire.quietError('Error accounts data for ledger page', error);
           reject();
         }
       })
@@ -115,7 +116,6 @@ export class Ledger implements OnInit {
   }
 
   async submitNewTransaction() {
-    console.log("Submit new transaction");
     let newTransaction: TransactionDTO = {
       trans_date: this.inputDate.nativeElement.value,
       trans_description: this.inputDescription.nativeElement.value,
@@ -124,16 +124,17 @@ export class Ledger implements OnInit {
       debit_account: this.debitSelection.value,
       notes: this.inputNotes.nativeElement.value
     }
+    this.campfire.debug("Sending new transaction", newTransaction)
     let proceed: boolean = this.validateNewTransaction(newTransaction);
     if (proceed) {
       let response = await this.transactionData.postNewTransaction(newTransaction).subscribe({
         next: (response) => {
           this.fetchData();
-          console.log(response);
+          this.campfire.debug("Posted new transaction response",response);
           this.resetManualInput();
         },
         error: (error) => {
-          console.error('Error fetching data:', error);
+          this.campfire.errorAlert('Unable to add new transaction, something went wrong!', error, newTransaction);
         }
       })
     }
@@ -142,23 +143,23 @@ export class Ledger implements OnInit {
   validateNewTransaction(newData: TransactionDTO): boolean {
     let result: boolean = true;
     if (newData.trans_date == "") {
-      this.toaster.error("Transaction must have a Date.")
+      this.campfire.errorAlert("Transaction must have a Date.")
       result = false;
     }
     if (newData.trans_description == "") {
-      this.toaster.error("Transaction must have a Description.")
+      this.campfire.errorAlert("Transaction must have a Description.")
       result = false;
     }
     if (newData.amount == 0 || newData.amount == null) {
-      this.toaster.error("Transaction must have an Amount.")
+      this.campfire.errorAlert("Transaction must have an Amount.")
       result = false;
     }
     if (newData.credit_account == 0 || newData.credit_account == null) {
-      this.toaster.error("Transaction must have a credit account.")
+      this.campfire.errorAlert("Transaction must have a credit account.")
       result = false;
     }
     if (newData.debit_account == 0 || newData.debit_account == null) {
-      this.toaster.error("Transaction must have a debit account.")
+      this.campfire.errorAlert("Transaction must have a debit account.")
       result = false;
     }
     return result;
@@ -170,6 +171,7 @@ export class Ledger implements OnInit {
   //--------------------------------------------------------------------------------
 
   resetManualInput() {
+    this.campfire.debug("Resetting UI on ledger Page");
     this.inputDate.nativeElement.value = "";
     this.inputDescription.nativeElement.value = "";
     this.inputAmount.nativeElement.value = "";
@@ -193,11 +195,11 @@ export class Ledger implements OnInit {
       if (result) {
         this.transactionData.postTransactionRemoval(itemTodelete).subscribe({
           next: (response) => {
-            this.toaster.success(response.status, `Trasaction [${itemDescription}] deleted successfully!`);
+            this.campfire.successAlert(`Trasaction [${itemDescription}] deleted successfully!`, response);
             this.fetchData();
           },
           error: (error) => {
-            this.toaster.error(`Error deleting transaction [${itemDescription}] : [${error}]`);
+            this.campfire.errorAlert(`Error deleting transaction [${itemDescription}]`, error);
           }
         })
       }

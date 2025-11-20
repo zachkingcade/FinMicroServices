@@ -15,6 +15,7 @@ import { Confirmation } from '../../components/confirmation/confirmation';
 import { AccountType } from '../../types/AccountType';
 import { TypeClass } from '../../types/TypeClass';
 import { SplitTransactionModal } from '../../components/split-transaction-modal/split-transaction-modal';
+import { Campfire } from '../../services/campfire';
 
 
 type RowForm = FormGroup<{
@@ -57,8 +58,8 @@ export class PendingTransactions {
     private transactionData: TransactionData,
     private accountData: AccountsData,
     private cdr: ChangeDetectorRef,
-    private toaster: ToastrService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private campfire: Campfire
   ) {
     this.transactionPendingList = [];
     this.accountsList = [];
@@ -104,36 +105,38 @@ export class PendingTransactions {
         this.transactionPendingList = response;
         this.buildRows(response);
         this.cdr.detectChanges();
-        console.log(response);
+        this.campfire.debug("Loaded pending transaction data for pending transaction page", response);
       },
       error: (error) => {
-        console.error('Error fetching data:', error);
+        this.campfire.errorAlert(`Error fetching pending transaction data`, error);
       }
     });
     this.accountData.accountsGetAll().subscribe({
       next: (response) => {
         this.accountsList = response;
         this.cdr.detectChanges();
-        console.log(response);
+        this.campfire.debug("Loaded account data for pending transaction page", response);
       },
       error: (error) => {
-        console.error('Error fetching data:', error);
+        this.campfire.errorAlert(`Error fetching account data`, error);
       }
     })
     this.accountData.accountTypesGetAll().subscribe({
       next: (response) => {
         this.accountTypeList = response;
+        this.campfire.debug("Loaded account type data for pending transaction page", response);
       },
       error: (error) => {
-        console.error('Error fetching data:', error);
+        this.campfire.errorAlert(`Error fetching account type data`, error);
       }
     })
     this.accountData.typesClassGetAll().subscribe({
       next: (response) => {
         this.typeClassList = response;
+        this.campfire.debug("Loaded type class data for pending transaction page", response);
       },
       error: (error) => {
-        console.error('Error fetching data:', error);
+        this.campfire.errorAlert(`Error fetching type class data`, error);
       }
     })
 
@@ -145,7 +148,7 @@ export class PendingTransactions {
       .map((g) => g.getRawValue());
 
     if (!changed.length) {
-      this.toaster.info('No edits to apply.');
+      this.campfire.infoAlert('No edits to apply.');
       return;
     }
 
@@ -159,19 +162,19 @@ export class PendingTransactions {
           notes: row.notes ? row.notes : ""
         })
       } else {
-        this.toaster.error(`Pending Transactions must have both a credit and a debit before applying. Data missing from trans_code [${row.trans_code}]`);
+        this.campfire.errorAlert(`Pending Transactions must have both a credit and a debit before applying. Data started but missing from trans_code [${row.trans_code}]`);
       }
     }
 
     let newTransactions: Transaction[] = this.constructTransactionsFromChangedData(sanatizedRowData);
-    console.log(newTransactions);
+    this.campfire.debug("Adding new transactions from pending transaction page", newTransactions)
     this.transactionData.postPendingTransactionsToConvert(newTransactions).subscribe({
       next: (response) => {
-        this.toaster.success(`${response.status}`);
+        this.campfire.successAlert(`${response.status}`);
         this.fetchData();
       },
       error: (error) => {
-        this.toaster.error(`Error applying pending transaction. Error: ${error}`);
+        this.campfire.errorAlert(`Error applying pending transaction. Error: ${error}`);
       }
     })
   }
@@ -208,22 +211,22 @@ export class PendingTransactions {
         if (rows[0] == "Date,Description,Original Description,Category,Amount,Status") {
           this.transactionData.postNewPendingTransactionsByCsv(fileContent).subscribe({
             next: (response) => {
-              this.toaster.success(response.status, "File Uploaded Successfully");
+              this.campfire.successAlert(response.status, "File Uploaded Successfully");
               this.clearFileInput();
               this.fetchData();
             },
             error: (error) => {
-              this.toaster.error(`Error posting file data: [${error}]`);
+              this.campfire.errorAlert(`Error posting file data`, error);
             }
           })
         } else {
-          this.toaster.error(`Error provided file of an unknown format.`);
+          this.campfire.errorAlert(`Error provided file of an unknown format.`);
         }
 
       };
 
       reader.onerror = (e: ProgressEvent<FileReader>) => {
-        this.toaster.error(`Error reading file: [${e.target?.error}]`);
+        this.campfire.errorAlert(`Error reading file`, (e.target)!.error!.message);
       };
 
       reader.readAsText(file);
@@ -253,31 +256,34 @@ export class PendingTransactions {
       if (result) {
         this.transactionData.postPendinngTransactionRemoval(this.transactionPendingList[itemIndex]).subscribe({
           next: (response) => {
-            this.toaster.success(response.status, `Pending Trasaction [${itemDescription}] deleted successfully!`);
+            this.campfire.successAlert(`Pending Trasaction [${itemDescription}] deleted successfully!`, response);
             this.fetchData();
           },
           error: (error) => {
-            this.toaster.error(`Error deleting pending transaction [${itemDescription}] : [${error}]`);
+            this.campfire.errorAlert(`Error deleting pending transaction [${itemDescription}]`, error);
           }
         })
       }
     });
   }
 
-  determineEffect(account_code: number, creditOrDebit: "credit" | "debit"): '+' | '-' {
+  determineEffect(account_code: number, creditOrDebit: "credit" | "debit"): '+' | '-' | undefined {
     let account = this.accountsList.find(account => account.account_code == account_code);
     if (!account) {
-      console.error("Error: account provided not found in account type list.")
+      this.campfire.errorAlert("Account provided not found in account type list.");
+      return undefined;
     }
 
     let accountType = this.accountTypeList.find(type => type.type_code == account!.account_type);
     if (!accountType) {
-      console.error("Error: account type not found in account type list.")
+      this.campfire.errorAlert("Error: account type not found in account type list.");
+      return undefined;
     }
 
     let typeClass = this.typeClassList.find(tclass => tclass.class_code == accountType!.type_class);
     if (!typeClass) {
-      console.error("Error: account type class not found in type class list.")
+      this.campfire.errorAlert("Error: account type class not found in type class list.");
+      return undefined;
     }
 
     return creditOrDebit == "credit" ? typeClass!.credit_effect : typeClass!.debit_effect;
@@ -299,21 +305,22 @@ export class PendingTransactions {
 
     dialogRef.afterClosed().subscribe(async (results: TransactionDTO[]) => {
       if (!results) {
-        this.toaster.error("No changes made!");
+        this.campfire.errorAlert("No changes made!");
         return;
       }
 
-      console.log(results);
+      this.campfire.debug("result from split window return", results);
 
       for (let newTransaction of results) {
         await new Promise<void>((resolve, reject) => {
           this.transactionData.postNewTransaction(newTransaction).subscribe({
             next: (response) => {
-              this.toaster.success(response.status, `New Trasaction [${newTransaction.trans_description}] created successfully!`);
+              this.campfire.successAlert(`New Trasaction [${newTransaction.trans_description}] created successfully!`, response);
               resolve();
             },
             error: (error) => {
-              this.toaster.error(`Error with split transaction [${JSON.stringify(newTransaction)}]: [${error}]`);
+              this.campfire.errorAlert(`Error with split transaction`, error, newTransaction);
+              reject();
             }
           })
         });
@@ -321,11 +328,11 @@ export class PendingTransactions {
 
       this.transactionData.postPendinngTransactionRemoval(original).subscribe({
         next: (response) => {
-          this.toaster.success(response.status, `Pending Trasaction [${original.trans_description}] deleted successfully!`);
+          this.campfire.successAlert(`Pending Trasaction [${original.trans_description}] deleted successfully!`, response);
           this.fetchData();
         },
         error: (error) => {
-          this.toaster.error(`Error with deleting pending transaction from split [${JSON.stringify(original)}]: [${error}]`);
+          this.campfire.errorAlert(`Error with deleting pending transaction from split`, error, original);
         }
       })
 

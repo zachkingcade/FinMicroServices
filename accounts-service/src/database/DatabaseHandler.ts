@@ -383,7 +383,7 @@ export class DatabaseHandler {
                     this.log.error(`Error retrieving type by Id [${id}] from the database: [${err.message}]`);
                     reject(err);
                 } else {
-                    console.log(row);
+                    this.log.info(`Got account type by id [${id}]: [${row}]`);
                     result = row;
                     resolve();
                 }
@@ -405,7 +405,7 @@ export class DatabaseHandler {
                     this.log.error(`Error retrieving type class by Id [${id}] from the database: [${err.message}]`);
                     reject(err);
                 } else {
-                    console.log(row);
+                    this.log.info(`Got type class by id [${id}]: [${row}]`);
                     result = row;
                     resolve();
                 }
@@ -427,7 +427,7 @@ export class DatabaseHandler {
                     this.log.error(`Error retrieving type by description [${description}] from the database: [${err.message}] `);
                     reject(err);
                 } else {
-                    console.log(row);
+                    this.log.info(`Got account type by description [${description}]: [${row}]`);
                     result = row;
                     resolve();
                 }

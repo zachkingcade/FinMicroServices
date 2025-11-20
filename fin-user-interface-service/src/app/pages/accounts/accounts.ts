@@ -7,6 +7,7 @@ import { AccountType } from '../../types/AccountType';
 import { MtxSelect, MtxSelectModule } from '@ng-matero/extensions/select';
 import { ToastrService } from 'ngx-toastr';
 import { TransactionData } from '../../services/transaction-data';
+import { Campfire } from '../../services/campfire';
 
 @Component({
   selector: 'app-accounts',
@@ -32,7 +33,7 @@ export class Accounts {
     private accountsData: AccountsData,
     private transactionData: TransactionData,
     private cdr: ChangeDetectorRef,
-    private toaster: ToastrService
+    private campfire: Campfire
   ) {
     this.accountsList = [];
     this.accountTypeList = [];
@@ -50,20 +51,20 @@ export class Accounts {
       next: async (response) => {
         this.accountsList = await this.makeDataPresentable(response);
         this.cdr.detectChanges();
-        console.log(response);
+        this.campfire.debug("Loaded account data for accounts page", response);
       },
       error: (error) => {
-        console.error('Error fetching data:', error);
+        this.campfire.errorAlert(`Error fetching account data`, error);
       }
     });
     this.accountsData.accountTypesGetAll().subscribe({
       next: async (response) => {
         this.accountTypeList = response;
         this.cdr.detectChanges();
-        console.log(response);
+        this.campfire.debug("Loaded account type data for accounts page", response);
       },
       error: (error) => {
-        console.error('Error fetching data:', error);
+        this.campfire.errorAlert(`Error fetching account type data`, error);
       }
     });
   }
@@ -81,11 +82,11 @@ export class Accounts {
             let accountBalance: number = await new Promise<number>((resolve, reject) => {
               this.transactionData.getCurrentAccountBalance(item.account_code).subscribe({
                 next: (response) => {
-                  console.log(`Gained Balance ${response}`)
+                  this.campfire.debug(`Retrieved Account [${item.account_code}]'s current balance`, response);
                   resolve(response);
                 },
                 error: (error) => {
-                  console.error('Error fetching data:', error);
+                  this.campfire.quietError(`Error fetching current balance for account [${item.account_code}]`, error);
                   reject(null);
                 }
               })
@@ -100,13 +101,13 @@ export class Accounts {
               }
               resultingList.push(newTypePresentable);
             } else {
-              console.log("Error");
+              this.campfire.quietError("unable to make data presentable on accounts page");
             }
           }
           resolve();
         },
         error: (error) => {
-          console.error('Error fetching data:', error);
+          this.campfire.errorAlert("Unable to fetch account data", error);
           reject();
         }
       })
@@ -115,21 +116,21 @@ export class Accounts {
   }
 
   async submitNewAccount() {
-    console.log("Submit new transaction");
-    let newAccoount: AccountDTO = {
+    let newAccount: AccountDTO = {
       account_type: this.typeSelection.value,
       account_description: this.inputDescription.nativeElement.value,
       notes: this.inputNotes.nativeElement.value
     }
-    if (this.validateNewAccount(newAccoount)) {
-      let response = await this.accountsData.postNewAccount(newAccoount).subscribe({
+    this.campfire.debug("Sending new account", newAccount)
+    if (this.validateNewAccount(newAccount)) {
+      let response = await this.accountsData.postNewAccount(newAccount).subscribe({
         next: (response) => {
           this.fetchData();
-          console.log(response);
+          this.campfire.debug("Posted new account response", response);
           this.resetManualInput();
         },
         error: (error) => {
-          console.error('Error fetching data:', error);
+          this.campfire.errorAlert('Unable to add new account, something went wrong!', error, newAccount);
         }
       })
     }
@@ -138,11 +139,11 @@ export class Accounts {
   validateNewAccount(newData: AccountDTO): boolean {
     let result: boolean = true;
     if (newData.account_description == "") {
-      this.toaster.error("Account must have a Description.")
+      this.campfire.errorAlert("Account must have a Description.")
       result = false;
     }
     if (newData.account_type == 0 || newData.account_type == null) {
-      this.toaster.error("Account must have a Account Type.")
+      this.campfire.errorAlert("Account must have a Account Type.")
       result = false;
     }
     return result;
@@ -153,6 +154,7 @@ export class Accounts {
   // UI Functions
   //--------------------------------------------------------------------------------
   resetManualInput() {
+    this.campfire.debug("Resetting UI on Accounts Page");
     this.typeSelection.value = "";
     this.inputDescription.nativeElement.value = "";
     this.inputNotes.nativeElement.value = "";
