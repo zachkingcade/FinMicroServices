@@ -1,20 +1,15 @@
-
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
+//--------------------------------------------------------------------------------
+// Boiler Plate SCSS
+//--------------------------------------------------------------------------------
 @use '@angular/material' as mat;
 
 html {
-  @include mat.theme((
-    color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
+  @include mat.theme((color: (primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    ));
 }
 
 body {
@@ -33,29 +28,131 @@ body {
   // Reset the user agent margin.
   margin: 0;
 }
+
 @import 'ngx-toastr/toastr';
 
-/* You can add global styles to this file, and also import other style files */
-html, body {
+//--------------------------------------------------------------------------------
+// Our Custom SCSS
+//--------------------------------------------------------------------------------
+
+
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
 }
 
-.columnSimpleOneLine{
-    white-space:nowrap
+body {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-.columnTakeExtraSpace{
-    width: 100%;
+app-nav-bar {
+  position: relative;
+  z-index: 9;
 }
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: larger;
+  overflow-x: auto;
+}
+
+th {
+  padding-top: .5rem;
+  padding-bottom: 1rem;
+  background-color: #888888;
+  text-align: left;
+  padding-right: .5em;
+  padding-left: .5em;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+tr:nth-child(even) {
+  background-color: #c0c4c4;
+}
+
+td {
+  padding-bottom: 1em;
+  padding-right: .5em;
+  padding-left: .5em;
+}
+
+.pageDataDisplayTableDiv {
+  position: relative;
+  background-color: rgb(197, 255, 236);
+  height: 75vh;
+  width: calc(100vw - 20rem);
+  margin-top: 3rem;
+  left: 10rem;
+  z-index: 1;
+  border-width: 3px;
+  border-color: black;
+  border-style: solid;
+  overflow-y: auto;
+}
+
+.manualInput {
+  position: relative;
+  background-color: greenyellow;
+  height: 12vh;
+  width: calc(100vw - 20rem);
+  left: 10rem;
+  z-index: 1;
+  border-width: 3px;
+  border-color: black;
+  border-style: solid;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+.columnSimpleOneLine {
+  white-space: nowrap
+}
+
+.columnTakeExtraSpace {
+  width: 100%;
+}
 
 .positiveEffect {
-    color: rgb(127, 185, 39);
+  color: rgb(127, 185, 39);
 }
 
 .negativeEffect {
-    color: #FF6961;
+  color: #FF6961;
+}
+
+.amountCells .amountHeaderCell {
+  text-align: right;
+}
+
+.actionButtons {
+  background-color: transparent;
+  outline: none;
+  border: 0;
+}
+
+.actionButtonsColumn {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.trash:hover {
+  color: red;
+}
+
+.trash:hover {
+  color: red;
+}
+
+.split:hover {
+  color: aqua;
+}
+
+.effectText {
+  font-size: small;
 }
