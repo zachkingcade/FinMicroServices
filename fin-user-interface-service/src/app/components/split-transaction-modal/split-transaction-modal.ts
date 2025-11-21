@@ -159,6 +159,14 @@ export class SplitTransactionModal {
     }
 
     for (let i = 0; i < this.splits.length; i++) {
+      const amount = this.splits.at(i).get("amount")?.value;
+      if (!amount || amount <= 0) {
+        this.campfire.errorAlert(`All split records must have amounts greater then 0`);
+        return;
+      }
+    }
+
+    for (let i = 0; i < this.splits.length; i++) {
       const credit = this.splits.at(i).get("credit")?.value;
       const debit = this.splits.at(i).get("debit")?.value;
       if (!credit || !debit) {
@@ -171,11 +179,12 @@ export class SplitTransactionModal {
     for (let i = 0; i < this.splits.length; i++) {
       const credit = this.splits.at(i).get("credit")?.value;
       const debit = this.splits.at(i).get("debit")?.value;
+      const amount = this.splits.at(i).get("amount")?.value;
       const notes = this.splits.at(i).get("notes")?.value;
       results.push({
         trans_date: this.originalTransaction.trans_date,
         trans_description: this.originalTransaction.trans_description + ` [Split ${i + 1}]`,
-        amount: this.total(),
+        amount: amount!,
         credit_account: credit!,
         debit_account: debit!,
         notes: notes ? notes : ""
