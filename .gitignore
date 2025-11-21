@@ -41,3 +41,5 @@ fin-user-interface-service/typings
 
 fin-user-interface-service/.DS_Store
 fin-user-interface-service/Thumbs.db
+
+fin-user-interface-service/logs/
