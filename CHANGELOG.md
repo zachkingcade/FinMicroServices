@@ -1,0 +1,12 @@
+# Verison 1.0.0
+- Feature Added: Add Account type
+- Feature Added: Add Transaction
+- Feature Added: Add Account
+- Feature Added: Upload Bank file (USAA only reconized format currently)
+- Feature Added: Reconcile Pending Transaction
+- Feature Added: Delete Transaction
+- Feature Added: Delete Pending Transaciton
+- Feature Added: Split Pending Transaciton
+- Feature Added: Show Account increase/decrease on both reconcile and split pending transaction
+- Feature Added: Account balannce is calculated based on accounting equation type class
+- Feature Added: Logging added to all services
