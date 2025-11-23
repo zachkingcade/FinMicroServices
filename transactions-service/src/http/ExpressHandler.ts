@@ -222,6 +222,9 @@ export class ExpressHandler {
           }
         }
 
+        //Round to solve decimal floating point issue, generally safe within the first two decimal places
+        result = Math.round(result * 100) / 100;
+
         res.json(result);
       } catch (error) {
         this.log.error(`Error http get: /transaction/getbyaccount, unable to get all transactions with account [${req.params.accountCode}]`);

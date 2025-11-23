@@ -15,10 +15,10 @@ export class DatabaseHandler {
     log: Logger;
 
     //stored queries
-    selectAccountALL: string = "SELECT * FROM chart_of_accounts;";
+    selectAccountALL: string = "SELECT * FROM chart_of_accounts order by account_type;";
     selectAccountById: string = "SELECT * FROM chart_of_accounts where account_code = ?;";
 
-    selectTypeALL: string = "SELECT * FROM account_types;";
+    selectTypeALL: string = "SELECT * FROM account_types order by type_class;";
     selectTypeById: string = "SELECT * FROM account_types where type_code = ?;";
     selectTypeByDescription: string = "SELECT * FROM account_types where type_description = ?;";
 
