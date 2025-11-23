@@ -35,7 +35,6 @@ body {
 // Our Custom SCSS
 //--------------------------------------------------------------------------------
 
-
 html,
 body {
   margin: 0;
@@ -62,7 +61,7 @@ table {
 th {
   padding-top: .5rem;
   padding-bottom: 1rem;
-  background-color: #888888;
+  background-color: #536d7e;
   text-align: left;
   padding-right: .5em;
   padding-left: .5em;
@@ -72,39 +71,58 @@ th {
 }
 
 tr:nth-child(even) {
-  background-color: #c0c4c4;
+  background-color: #88c0bf;
 }
 
 td {
-  padding-bottom: 1em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
   padding-right: .5em;
   padding-left: .5em;
 }
 
+input {
+  border: 2px solid #b4b4b4;
+  padding: 8px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  font-size: large;
+  text-align: left;
+}
+
+.smallInput {
+  width: 6rem;
+}
+
+.mediumInput{
+  width: 15rem;
+}
+
+.selector {
+  min-width: 15em;
+}
+
+input:focus {
+ box-shadow: 5px 5px #888888;
+}
+
 .pageDataDisplayTableDiv {
   position: relative;
-  background-color: rgb(197, 255, 236);
+  background-color: #CAE9FF;
   height: 75vh;
   width: calc(100vw - 20rem);
   top: 3rem;
   left: 10rem;
   z-index: 1;
-  border-width: 3px;
-  border-color: black;
-  border-style: solid;
   overflow-y: auto;
 }
 
 .manualInput {
   position: relative;
-  background-color: greenyellow;
-  height: 12vh;
+  background-color: #CAE9FF;
   width: calc(100vw - 20rem);
   left: 10rem;
   z-index: 1;
-  border-width: 3px;
-  border-color: black;
-  border-style: solid;
   overflow-y: hidden;
   overflow-x: auto;
 }
@@ -156,3 +174,4 @@ td {
 .effectText {
   font-size: small;
 }
+

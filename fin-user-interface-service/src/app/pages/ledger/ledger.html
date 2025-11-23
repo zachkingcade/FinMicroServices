@@ -54,10 +54,10 @@
         <tbody>
             <tr>
                 <td><input type="date" id="transactionDate" #inputDate></td>
-                <td><input type="text" id="transactionDescription" #inputDescription></td>
-                <td class="amountCells"><input type="number" id="transactionAmount" #inputAmount></td>
+                <td><input type="text" class="mediumInput" id="transactionDescription" #inputDescription></td>
+                <td class="amountCells"><input type="number" class="smallInput" id="transactionAmount" #inputAmount></td>
                 <td class="selector">
-                    <mtx-select placeholder="Type to search" #creditSelection>
+                    <mtx-select placeholder="Type to search"  #creditSelection>
                         @for (item of this.accountsList; track item.account_code) {
                         <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
                         }
