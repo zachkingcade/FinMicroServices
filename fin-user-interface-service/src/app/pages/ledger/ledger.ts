@@ -11,6 +11,8 @@ import { FeatherModule } from 'angular-feather';
 import { MatDialog } from '@angular/material/dialog';
 import { Confirmation } from '../../components/confirmation/confirmation';
 import { Campfire } from '../../services/campfire';
+import { AccountType } from '../../types/AccountType';
+import { TypeClass } from '../../types/TypeClass';
 
 @Component({
   selector: 'app-ledger',
@@ -25,6 +27,8 @@ export class Ledger implements OnInit {
   originalTransactionData: Transaction[] = [];
   transactionList: TransactionPresentable[];
   accountsList: Account[];
+  accountTypeList: AccountType[];
+  typeClassList: TypeClass[];
   @ViewChild('inputDate') inputDate!: ElementRef<HTMLInputElement>;
   @ViewChild('inputDescription') inputDescription!: ElementRef<HTMLInputElement>;
   @ViewChild('inputAmount') inputAmount!: ElementRef<HTMLInputElement>;
@@ -44,6 +48,8 @@ export class Ledger implements OnInit {
   ) {
     this.transactionList = [];
     this.accountsList = [];
+    this.accountTypeList = [];
+    this.typeClassList = [];
   }
 
   //--------------------------------------------------------------------------------
@@ -74,6 +80,24 @@ export class Ledger implements OnInit {
       },
       error: (error) => {
         this.campfire.errorAlert(`Error fetching account data`, error);
+      }
+    })
+    this.accountData.accountTypesGetAll().subscribe({
+      next: (response) => {
+        this.accountTypeList = response;
+        this.campfire.debug("Loaded account type data for pending transaction page", response);
+      },
+      error: (error) => {
+        this.campfire.errorAlert(`Error fetching account type data`, error);
+      }
+    })
+    this.accountData.typesClassGetAll().subscribe({
+      next: (response) => {
+        this.typeClassList = response;
+        this.campfire.debug("Loaded type class data for pending transaction page", response);
+      },
+      error: (error) => {
+        this.campfire.errorAlert(`Error fetching type class data`, error);
       }
     })
   }
@@ -130,7 +154,7 @@ export class Ledger implements OnInit {
       let response = await this.transactionData.postNewTransaction(newTransaction).subscribe({
         next: (response) => {
           this.fetchData();
-          this.campfire.debug("Posted new transaction response",response);
+          this.campfire.debug("Posted new transaction response", response);
           this.resetManualInput();
         },
         error: (error) => {
@@ -172,7 +196,6 @@ export class Ledger implements OnInit {
 
   resetManualInput() {
     this.campfire.debug("Resetting UI on ledger Page");
-    this.inputDate.nativeElement.value = "";
     this.inputDescription.nativeElement.value = "";
     this.inputAmount.nativeElement.value = "";
     this.creditSelection.value = "";
@@ -204,6 +227,28 @@ export class Ledger implements OnInit {
         })
       }
     });
+  }
+
+  determineEffect(account_code: number, creditOrDebit: "credit" | "debit"): '+' | '-' | undefined {
+    let account = this.accountsList.find(account => account.account_code == account_code);
+    if (!account) {
+      this.campfire.errorAlert("Account provided not found in account type list.");
+      return undefined;
+    }
+
+    let accountType = this.accountTypeList.find(type => type.type_code == account!.account_type);
+    if (!accountType) {
+      this.campfire.errorAlert("Error: account type not found in account type list.");
+      return undefined;
+    }
+
+    let typeClass = this.typeClassList.find(tclass => tclass.class_code == accountType!.type_class);
+    if (!typeClass) {
+      this.campfire.errorAlert("Error: account type class not found in type class list.");
+      return undefined;
+    }
+
+    return creditOrDebit == "credit" ? typeClass!.credit_effect : typeClass!.debit_effect;
   }
 
 }
