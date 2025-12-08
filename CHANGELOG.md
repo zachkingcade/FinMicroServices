@@ -23,4 +23,5 @@ TLDR: This is the very start of the project starting from nothing and bringing u
 - New default sort orders for Account service queries
 - Added Commit Standard and updated changelog format
 - Added increase/decrease account indicator to ledger page's manual transaction entry fields
-- <b>Bugfix</b>: Corrected floating point rounding error in Transactions Service summarazation system 
+- <b>Bugfix</b>: Corrected floating point rounding error in Transactions Service summarazation system
+- Added TODO tracking system
