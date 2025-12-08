@@ -18,3 +18,9 @@ TLDR: This is the very start of the project starting from nothing and bringing u
 - Feature Added: Account balannce is calculated based on accounting equation type class
 - Feature Added: Logging added to all services
 - UI Update: overhauled UI theme to an ocean blue
+
+## Version 1.1.0
+- New default sort orders for Account service queries
+- Added Commit Standard and updated changelog format
+- Added increase/decrease account indicator to ledger page's manual transaction entry fields
+- <b>Bugfix</b>: Corrected floating point rounding error in Transactions Service summarazation system 
