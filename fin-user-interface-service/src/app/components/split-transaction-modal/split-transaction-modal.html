@@ -65,7 +65,8 @@
     <button (click)="addSplit()">Add Line</button>
 
     <p>
-        Total: <strong>{{ total() | number:'1.2-2' }}</strong>
+        Total: <strong>{{ total() | number:'1.2-2' }}</strong> <br>
+        Remaining: <strong>{{ originalTransaction.amount - total() | number:'1.2-2' }}</strong>
     </p>
 
 </div>

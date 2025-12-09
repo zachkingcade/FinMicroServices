@@ -2,7 +2,6 @@
 
 ## Core Features
 - [ ] Add transaction search filters
-- [ ] Split Shows Remaining Amount
 
 ## Infrastructure
 - [ ] Add Dockerfile for Accounts Service

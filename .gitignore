@@ -1,3 +1,6 @@
+# Root Project
+db-backups/
+
 # Accounts Service
 accounts-service/node_modules/
 accounts-service/dist/
