@@ -301,6 +301,7 @@ export class PendingTransactions {
         typeClassList: this.typeClassList
       },
       disableClose: true,
+      panelClass: "panelBody"
     });
 
     dialogRef.afterClosed().subscribe(async (results: TransactionDTO[]) => {

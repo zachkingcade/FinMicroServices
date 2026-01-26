@@ -1,78 +1,80 @@
-<h2 mat-dialog-title>Split Transaction</h2>
+<div class="modalBody">
+    <h2 mat-dialog-title>Split Transaction</h2>
 
-<div mat-dialog-content>
+    <div mat-dialog-content>
 
-    <!-- Displays the data from the original transaction being split from -->
-    <p>Original date: <strong>{{ originalTransaction.trans_date }}</strong></p>
-    <p>Original description: <strong>{{ originalTransaction.trans_description }}</strong></p>
-    <p>Original Amount: <strong>{{ originalTransaction.amount }}</strong></p>
+        <!-- Displays the data from the original transaction being split from -->
+        <p>Original date: <strong>{{ originalTransaction.trans_date }}</strong></p>
+        <p>Original description: <strong>{{ originalTransaction.trans_description }}</strong></p>
+        <p>Original Amount: <strong>{{ originalTransaction.amount }}</strong></p>
 
-    <table class="split-table">
-        <tr>
-            <th>Amount</th>
-            <th>Credit</th>
-            <th>Debit</th>
-            <th>Notes</th>
-            <!-- For Delete button placement -->
-            <th></th>
-        </tr>
+        <table class="split-table">
+            <tr>
+                <th>Amount</th>
+                <th>Credit</th>
+                <th>Debit</th>
+                <th>Notes</th>
+                <!-- For Delete button placement -->
+                <th></th>
+            </tr>
 
-        @for (split of splits.controls; let i = $index; track i) {
-        <tr [formGroup]="split" class="selector">
-            <td>
-                <input formControlName="amount" type="number" step="0.01" (input)="limitDecimals(i)">
-            </td>
+            @for (split of splits.controls; let i = $index; track i) {
+            <tr [formGroup]="split" class="selector">
+                <td>
+                    <input formControlName="amount" type="number" step="0.01" (input)="limitDecimals(i)">
+                </td>
 
-            <!-- Credit Account Selection and effect display -->
-            <td>
-                <mtx-select placeholder="Select Credit" formControlName="credit">
-                    @for (item of this.accountOptions; track item.account_code) {
-                    <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
+                <!-- Credit Account Selection and effect display -->
+                <td>
+                    <mtx-select placeholder="Select Credit" formControlName="credit">
+                        @for (item of this.accountOptions; track item.account_code) {
+                        <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
+                        }
+                    </mtx-select>
+                    @if (split.get('credit')?.value && determineEffect(split.get('credit')!.value!,"credit") == '+')
+                    {<p class="effectText positiveEffect">Increase ^</p>}
+                    @if (split.get('credit')?.value && determineEffect(split.get('credit')!.value!,"credit") == '-')
+                    {<p class="effectText negativeEffect">Decrease v</p>}
+                </td>
+
+                <!-- Debit Account Selection and effect display -->
+                <td>
+                    <mtx-select placeholder="Select Debit" formControlName="debit">
+                        @for (item of this.accountOptions; track item.account_code) {
+                        <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
+                        }
+                    </mtx-select>
+                    @if (split.get('debit')?.value && determineEffect(split.get('debit')!.value!,"debit") == '+')
+                    {<p class="effectText positiveEffect">Increase ^</p>}
+                    @if (split.get('debit')?.value && determineEffect(split.get('debit')!.value!,"debit") == '-')
+                    {<p class="effectText negativeEffect">Decrease v</p>}
+                </td>
+
+                <td><input class="notes" type="text" formControlName="notes"></td>
+
+                <!-- Button to remove row, only appears if there is more then 2 rows -->
+                <td>
+                    @if (splits.length > 2){
+                    <button (click)="removeSplit(i)">X</button>
                     }
-                </mtx-select>
-                @if (split.get('credit')?.value && determineEffect(split.get('credit')!.value!,"credit") == '+')
-                {<p class="effectText positiveEffect">Increase ^</p>}
-                @if (split.get('credit')?.value && determineEffect(split.get('credit')!.value!,"credit") == '-')
-                {<p class="effectText negativeEffect">Decrease v</p>}
-            </td>
+                </td>
+            </tr>
+            }
+        </table>
 
-            <!-- Debit Account Selection and effect display -->
-            <td>
-                <mtx-select placeholder="Select Debit" formControlName="debit">
-                    @for (item of this.accountOptions; track item.account_code) {
-                    <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
-                    }
-                </mtx-select>
-                @if (split.get('debit')?.value && determineEffect(split.get('debit')!.value!,"debit") == '+')
-                {<p class="effectText positiveEffect">Increase ^</p>}
-                @if (split.get('debit')?.value && determineEffect(split.get('debit')!.value!,"debit") == '-')
-                {<p class="effectText negativeEffect">Decrease v</p>}
-            </td>
+        <!-- Button that adds a new split row -->
+        <button (click)="addSplit()" id="addLine">Add Line</button>
 
-            <td><input type="text" formControlName="notes"></td>
+        <p>
+            Total: <strong>{{ total() | number:'1.2-2' }}</strong> <br>
+            Remaining: <strong>{{ originalTransaction.amount - total() | number:'1.2-2' }}</strong>
+        </p>
 
-            <!-- Button to remove row, only appears if there is more then 2 rows -->
-            <td>
-                @if (splits.length > 2){
-                <button (click)="removeSplit(i)">X</button>
-                }
-            </td>
-        </tr>
-        }
-    </table>
+    </div>
 
-    <!-- Button that adds a new split row -->
-    <button (click)="addSplit()">Add Line</button>
-
-    <p>
-        Total: <strong>{{ total() | number:'1.2-2' }}</strong> <br>
-        Remaining: <strong>{{ originalTransaction.amount - total() | number:'1.2-2' }}</strong>
-    </p>
-
-</div>
-
-<!-- Action Buttons -->
-<div mat-dialog-actions align="end">
-    <button mat-button (click)="cancel()">Cancel</button>
-    <button mat-button color="primary" (click)="confirm()">Confirm</button>
+    <!-- Action Buttons -->
+    <div mat-dialog-actions align="end">
+        <button class="modalButtons" mat-button (click)="cancel()">Cancel</button>
+        <button class="modalButtons" color="primary" (click)="confirm()">Confirm</button>
+    </div>
 </div>

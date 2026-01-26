@@ -15,8 +15,8 @@ export class DatabaseHandler {
     log: Logger;
 
     //stored queries
-    selectTransactionsAll: string = "SELECT * FROM ledger_transactions;";
-    selectPendingTransactionsAll: string = "SELECT * FROM pending_transactions;";
+    selectTransactionsAll: string = "SELECT * FROM ledger_transactions order by trans_date;";
+    selectPendingTransactionsAll: string = "SELECT * FROM pending_transactions order by trans_date;";
     selectTransactionsByAffectingAccounts: string = "SELECT * FROM ledger_transactions where credit_account = ? or debit_account = ?;";
 
     //--------------------------------------------------------------------------------
