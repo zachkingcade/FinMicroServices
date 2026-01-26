@@ -4,8 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start:client": "ng serve",
+    "start:client:local": "ng serve --host 0.0.0.0 --port 4200",
     "start:logger": "node logger/logger-server.js",
     "start": "concurrently \"npm run start:client\" \"npm run start:logger\"",
+    "start:local": "concurrently \"npm run start:client:local\" \"npm run start:logger\"",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
