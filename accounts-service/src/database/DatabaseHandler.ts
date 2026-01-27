@@ -17,6 +17,7 @@ export class DatabaseHandler {
     //stored queries
     selectAccountALL: string = "SELECT * FROM chart_of_accounts order by account_type;";
     selectAccountById: string = "SELECT * FROM chart_of_accounts where account_code = ?;";
+    selectAccountsByType: string = "SELECT * FROM chart_of_accounts where account_type = ?;";
 
     selectTypeALL: string = "SELECT * FROM account_types order by type_class;";
     selectTypeById: string = "SELECT * FROM account_types where type_code = ?;";
@@ -95,6 +96,7 @@ export class DatabaseHandler {
             type_code INTEGER PRIMARY KEY AUTOINCREMENT,
             type_description TEXT UNIQUE NOT NULL,
             type_class INTEGER NOT NULL,
+            type_active CHAR(1) NOT NULL,
             notes TEXT NULL
             )`,
                 err => {
@@ -216,8 +218,8 @@ export class DatabaseHandler {
         // Construct insert statement
         let newInsertStatement: string = "";
         newInsertStatement += "INSERT INTO account_types ";
-        newInsertStatement += `(type_description,type_class${notes ? ",notes) " : ") "}`;
-        newInsertStatement += `VALUES ("${typeDescription}","${typeClass}"${notes ? `,"${notes}"` : ""});`;
+        newInsertStatement += `(type_description,type_class,type_active,${notes ? ",notes) " : ") "}`;
+        newInsertStatement += `VALUES ("${typeDescription}","${typeClass}","Y"${notes ? `,"${notes}"` : ""});`;
 
         await new Promise<void>((resolve, reject) => {
             this.db.run(
@@ -371,6 +373,27 @@ export class DatabaseHandler {
     }
 
     /**
+     * Gets accounts by type
+     * @param id the desired type to search by
+     * @returns accounts of provided type
+     */
+    async getAccountsByType(id: number): Promise<Account[]> {
+        let result: any;
+        await new Promise<void>((resolve, reject) => {
+            this.db.all(this.selectAccountsByType, [id], (err, row) => {
+                if (err) {
+                    this.log.error(`Error retrieving accounts by type [${id}] from the database: [${err.message}]`);
+                    reject(err);
+                } else {
+                    result = row;
+                    resolve();
+                }
+            })
+        })
+        return result;
+    }
+
+    /**
      * Gets type by id
      * @param id account type's type_code
      * @returns type by id 
@@ -436,4 +459,80 @@ export class DatabaseHandler {
         return result;
     }
 
+    //--------------------------------------------------------------------------------
+    //Updating Records
+    //--------------------------------------------------------------------------------
+
+    /**
+     * Updates account in the database
+     * @param newObject A version of the previous object that has had everything that the caller might want to change, changed
+     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
+     */
+    async UpdateAccount(newObject: Account): Promise<void> {
+        // Construct update statement
+        let newUpdateStatement: string = "";
+        newUpdateStatement += "UPDATE chart_of_accounts ";
+        newUpdateStatement += `SET account_description = '${newObject.account_description}'`
+        newUpdateStatement += `SET account_active = '${newObject.account_active}'`
+        newUpdateStatement += newObject.notes ? `, SET notes = '${newObject.notes}'` : "";
+        newUpdateStatement += ` WHERE type_code = ${newObject.account_code}`
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                newUpdateStatement,
+                err => {
+                    if (err) {
+                        this.log.error(`Error updating Account with data: typeDescription [${newObject.account_description}],notes [${newObject.notes}]: [${err.message}]`);
+                        reject(err);
+                    } else {
+                        this.log.info(`Account [${newObject.account_description}] updated successfully!`);
+                        resolve();
+                    }
+                }
+            )
+        })
+    }
+
+    /**
+     * Updates account type in the database
+     * @param newObject A version of the previous object that has had everything that the caller might want to change, changed
+     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
+     */
+    async UpdateAccountType(newObject: AccountType): Promise<void> {
+        //are we updating active status
+        let oldObject: AccountType = await this.getTypeById(newObject.type_code);
+        let updatingActive = oldObject.type_active != newObject.type_active;
+
+        // Construct update statement
+        let newUpdateStatement: string = "";
+        newUpdateStatement += "UPDATE account_types ";
+        newUpdateStatement += `SET type_description = '${newObject.type_description}'`
+        newUpdateStatement += `SET type_active = '${newObject.type_active}'`
+        newUpdateStatement += newObject.notes ? `, SET notes = '${newObject.notes}'` : "";
+        newUpdateStatement += ` WHERE type_code = ${newObject.type_code}`
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                newUpdateStatement,
+                err => {
+                    if (err) {
+                        this.log.error(`Error updating Account Type with data: typeDescription [${newObject.type_description}],notes [${newObject.notes}]: [${err.message}]`);
+                        reject(err);
+                    } else {
+                        this.log.info(`Account Type [${newObject.type_description}] updated successfully!`);
+                        resolve();
+                    }
+                }
+            )
+        })
+
+        if (updatingActive) {
+            let accountsToUpdate: Account[] = await this.getAccountsByType(oldObject.type_code);
+
+            for (let account of accountsToUpdate) {
+                account.account_active = newObject.type_active;
+                await this.UpdateAccount(account);
+            }
+        }
+    }
 }
