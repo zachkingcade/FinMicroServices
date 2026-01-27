@@ -6,22 +6,24 @@ number is also used for the commit messages mentioned in the format described in
 ## Verison 1.0.0 
 <b>(Minimal Viable Product)</b> <br>
 TLDR: This is the very start of the project starting from nothing and bringing us up to the minimal viable product.
-- Feature Added: Add Account type
-- Feature Added: Add Transaction
-- Feature Added: Add Account
-- Feature Added: Upload Bank file (USAA only reconized format currently)
-- Feature Added: Reconcile Pending Transaction
-- Feature Added: Delete Transaction
-- Feature Added: Delete Pending Transaciton
-- Feature Added: Split Pending Transaciton
-- Feature Added: Show Account increase/decrease on both reconcile and split pending transaction
-- Feature Added: Account balannce is calculated based on accounting equation type class
-- Feature Added: Logging added to all services
+- Added: Add Account type
+- Added: Add Transaction
+- Added: Add Account
+- Added: Upload Bank file (USAA only reconized format currently)
+- Added: Reconcile Pending Transaction
+- Added: Delete Transaction
+- Added: Delete Pending Transaciton
+- Added: Split Pending Transaciton
+- Added: Show Account increase/decrease on both reconcile and split pending transaction
+- Added: Account balannce is calculated based on accounting equation type class
+- Added: Logging added to all services
 - UI Update: overhauled UI theme to an ocean blue
 
 ## Version 1.1.0
-- New default sort orders for Account service queries
-- Added Commit Standard and updated changelog format
-- Added increase/decrease account indicator to ledger page's manual transaction entry fields
-- <b>Bugfix</b>: Corrected floating point rounding error in Transactions Service summarazation system
-- Added TODO tracking system
+- Added: default sort orders for Account service queries
+- Added: Commit Standard and updated changelog format
+- Added: increase/decrease account indicator to ledger page's manual transaction entry fields
+- Bugfix: Corrected floating point rounding error in Transactions Service summarazation system
+- Added: TODO tracking system
+- UI Update: Split modal now shows remaining balance
+- Added: Allowed local hosting of services on local network instead of strictly on host system
