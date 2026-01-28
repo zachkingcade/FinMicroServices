@@ -10,6 +10,8 @@
                 <th>Equation Section</th>
                 <th>Description</th>
                 <th>Notes</th>
+                <!-- This is the empty header for the action buttons -->
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -19,6 +21,10 @@
                 <td class="columnSimpleOneLine">{{item.type_class}}</td>
                 <td class="columnSimpleOneLine">{{item.type_description}}</td>
                 <td class="columnTakeExtraSpace">{{item.notes? item.notes : "-"}}</td>
+                <!-- Dedicated column for buttons -->
+                <td>
+                    <button class="actionButtons edit" (click)="openEditModal(item.type_code!)"><i-feather name="edit"></i-feather></button>
+                </td>
             </tr>
             }
         </tbody>

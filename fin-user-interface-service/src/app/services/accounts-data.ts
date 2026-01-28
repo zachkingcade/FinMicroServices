@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AccountType, AccountTypeAddReturn, AccountTypeDTO } from '../types/AccountType';
+import { AccountType, AccountTypeAddReturn, AccountTypeDTO, AccountTypeUpdateReturn } from '../types/AccountType';
 import { Account, AccountAddReturn, AccountDTO } from '../types/Account';
 import { TypeClass } from '../types/TypeClass';
 import { Campfire } from './campfire';
@@ -47,6 +47,11 @@ export class AccountsData {
   postNewAccount(bodyData: AccountDTO): Observable<AccountAddReturn> {
     this.campfire.debug("Accounts Service Executing HTTP POST /account/ad");
     return this.http.post<AccountAddReturn>("/account/add", bodyData);
+  }
+
+  postUpdateAccountType(bodyData: AccountType): Observable<AccountTypeUpdateReturn> {
+    this.campfire.debug("Accounts Service Executing HTTP POST /type/update");
+    return this.http.post<AccountTypeUpdateReturn>("/type/update", bodyData);
   }
 
 }

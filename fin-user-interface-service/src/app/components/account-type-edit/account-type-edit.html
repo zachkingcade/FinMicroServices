@@ -1,0 +1,29 @@
+<div class="modalBody">
+    <h2 mat-dialog-title>Edit Account Type</h2>
+
+    <div mat-dialog-content>
+
+        <!-- Displays the data from the original transaction being edited -->
+        <p>Internal Type Code: {{ originalAccountType.type_code }}</p>
+        <p>Type Class: <strong>{{ originalAccountType.type_class }}</strong></p>
+        <p>Original Description: {{ originalAccountType.type_description }}</p>
+        <p>Original Notes: {{ originalAccountType.notes || "" }}</p>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Type Description:</p>
+            <input id="typeDescriptionInput" class="flexInputInput" type="text" #descriptionInput>
+        </div>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Type Notes:</p>
+            <input id="notesInput" class="flexInputInput" type="text" #notesInput>
+        </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div mat-dialog-actions align="end">
+        <button class="modalButtons" mat-button (click)="cancel()">Cancel</button>
+        <button class="modalButtons" color="primary" (click)="confirm()">Confirm</button>
+    </div>
+</div>

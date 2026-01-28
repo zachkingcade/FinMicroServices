@@ -7,10 +7,13 @@ import { TypeClass } from '../../types/TypeClass';
 import { MtxSelect, MtxSelectModule } from '@ng-matero/extensions/select';
 import { ToastrService } from 'ngx-toastr';
 import { Campfire } from '../../services/campfire';
+import { FeatherModule } from 'angular-feather';
+import { AccountTypeEdit } from '../../components/account-type-edit/account-type-edit';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-account-types',
-  imports: [NavBar, CommonModule, MtxSelectModule],
+  imports: [NavBar, CommonModule, MtxSelectModule, FeatherModule],
   templateUrl: './account-types.html',
   styleUrl: './account-types.scss',
 })
@@ -30,7 +33,8 @@ export class AccountTypes {
   constructor(
     private accountsData: AccountsData,
     private cdr: ChangeDetectorRef,
-    private campfire: Campfire
+    private campfire: Campfire,
+    private dialog: MatDialog,
   ) {
     this.accountsTypeList = [];
     this.accountsClassList = [];
@@ -156,5 +160,41 @@ export class AccountTypes {
     this.inputDescription.nativeElement.value = "";
     this.inputNotes.nativeElement.value = "";
   }
+
+  openEditModal(type_code: number) {
+      const original = this.accountsTypeList.find(accountType => accountType.type_code! == type_code);
+
+      if(original == undefined){
+        this.campfire.errorAlert(`An Error occured trying to edit account type`);
+        this.campfire.quietError(`Error Occured trying to find account type using type_code [${type_code}] in the openEditModal on Accounts Type Page`)
+      }
+  
+      const dialogRef = this.dialog.open(AccountTypeEdit, {
+        width: '50vw',
+        data: {
+          originalAccountType: original
+        },
+        disableClose: true,
+        panelClass: "panelBody"
+      });
+  
+      dialogRef.afterClosed().subscribe(async (result: AccountType) => {
+        if (!result) {
+          this.campfire.errorAlert("No changes made!");
+          return;
+        }
+        this.campfire.debug("result from Account Type Edit window return", result);
+
+        this.accountsData.postUpdateAccountType(result).subscribe({
+        next: (response) => {
+          this.campfire.successAlert(`Account type [${original!.type_description}] updated successfully!`, response);
+          this.fetchData();
+        },
+        error: (error) => {
+          this.campfire.errorAlert(`Error with updating account type`, error, original);
+        }
+      })
+      });
+    }
 
 }

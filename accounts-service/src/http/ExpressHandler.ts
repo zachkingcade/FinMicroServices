@@ -3,7 +3,7 @@ import { WLog } from '../WLog.js'
 import { Logger } from 'winston'
 import { Account, AccountDTO } from '../types/Account.js'
 import { DatabaseHandler } from '../database/DatabaseHandler.js'
-import { AccountTypeDTO } from '../types/AccountType.js'
+import { AccountType, AccountTypeDTO } from '../types/AccountType.js'
 import { TypeClass } from '../types/TypeClass.js'
 
 export class ExpressHandler {
@@ -69,8 +69,8 @@ export class ExpressHandler {
   setupPosts() {
     this.app.post('/account/add', async (req, res) => {
       try {
-        let newAccount: AccountDTO = req.body
-        this.log.info(`Recieved command: /account/add/ with data ${newAccount}`);
+        let newAccount: AccountDTO = req.body;
+        this.log.info(`Recieved command: /account/add/ with data ${newAccount.toString()}`);
         await this.database.addAccount(newAccount.account_description, newAccount.account_type, newAccount.notes, newAccount.account_active);
         res.status(201).json({ status: 'Account Added', newAccount })
       } catch (error) {
@@ -81,13 +81,37 @@ export class ExpressHandler {
 
     this.app.post('/type/add', async (req, res) => {
       try {
-        let newAccountType: AccountTypeDTO = req.body
-        this.log.info(`Recieved command: /type/add/ with data ${newAccountType}`);
+        let newAccountType: AccountTypeDTO = req.body;
+        this.log.info(`Recieved command: /type/add/ with data ${newAccountType.toString()}`);
         await this.database.addAccountType(newAccountType.type_description, newAccountType.type_class, newAccountType.notes)
         res.status(201).json({ status: 'Account Type Added', newAccountType })
       } catch (error) {
         this.log.error(`Error http post: /type/add/, unable to add account type: [${error}]`);
         res.status(500).json({ status: 'Account Type Add Failed', error });
+      }
+    })
+
+    this.app.post('/account/update', async (req, res) => {
+      try {
+        let updatedAccount: Account = req.body;
+        this.log.info(`Recieved command: /account/update/ with data ${updatedAccount.toString()}`);
+        await this.database.UpdateAccount(updatedAccount);
+        res.status(201).json({ status: 'Account Updated', updatedAccount })
+      } catch (error) {
+        this.log.error(`Error http post: /account/update/, unable to update account: [${error}]`);
+        res.status(500).json({ status: 'Account Update Failed', error });
+      }
+    })
+
+    this.app.post('/type/update', async (req, res) => {
+      try {
+        let updateAccountType: AccountType = req.body;
+        this.log.info(`Recieved command: /type/update/ with data ${updateAccountType.toString()}`);
+        await this.database.UpdateAccountType(updateAccountType);
+        res.status(201).json({ status: 'Account Type Updated', updateAccountType });
+      } catch (error) {
+        this.log.error(`Error http post: /type/update/, unable to update account type: [${error}]`);
+        res.status(500).json({ status: 'Account Type Update Failed', error });
       }
     })
   }

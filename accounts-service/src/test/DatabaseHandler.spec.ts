@@ -26,14 +26,14 @@ test("Check connected status", () => {
 
 test("Checking for type by Id", async () => {
     let testTypeOne: AccountType = await db.getTypeById(1);
-    let resultShouldBe: AccountType = {type_code: 1, type_class: 1, type_description: "Testing Account 01"};
+    let resultShouldBe: AccountType = {type_code: 1, type_class: 1, type_description: "Testing Account 01", type_active: "Y"};
     assert.ok(testTypeOne.type_code == resultShouldBe.type_code, "Expected account type_code to be the same.");
     assert.ok(testTypeOne.type_description == resultShouldBe.type_description, "Expected account type_description to be the same.");
 })
 
 test("Checking for type by description", async () => {
     let testTypeOne: AccountType = await db.getTypeByDescription("Testing Account 02")
-    let resultShouldBe: AccountType = {type_code: 2, type_class: 1, type_description: "Testing Account 02", notes: "This one has notes"};
+    let resultShouldBe: AccountType = {type_code: 2, type_class: 1, type_description: "Testing Account 02", notes: "This one has notes", type_active: "Y"};
     assert.ok(testTypeOne.type_code == resultShouldBe.type_code, "Expected account type_code to be the same.");
     assert.ok(testTypeOne.type_description == resultShouldBe.type_description, "Expected account type_description to be the same.");
     assert.ok(testTypeOne.notes == resultShouldBe.notes, "Expected account type notes to be the same.");
@@ -41,8 +41,8 @@ test("Checking for type by description", async () => {
 
 test("Testing get all types", async () => {
     let types: AccountType[] = await db.getAllTypes();
-    let resultShouldBe1: AccountType = {type_code: 1, type_class: 1, type_description: "Testing Account 01"};
-    let resultShouldBe2: AccountType = {type_code: 2, type_class: 1, type_description: "Testing Account 02", notes: "This one has notes"};
+    let resultShouldBe1: AccountType = {type_code: 1, type_class: 1, type_description: "Testing Account 01", type_active: "Y"};
+    let resultShouldBe2: AccountType = {type_code: 2, type_class: 1, type_description: "Testing Account 02", notes: "This one has notes", type_active: "Y"};
     assert.ok(types[0]!.type_code == resultShouldBe1.type_code, "Expected account type_code to be the same.");
     assert.ok(types[0]!.type_description == resultShouldBe1.type_description, "Expected account type_description to be the same.");
     assert.ok(types[0]!.notes == resultShouldBe1.notes, "Expected account type notes to be the same.");

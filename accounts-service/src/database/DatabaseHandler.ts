@@ -473,9 +473,11 @@ export class DatabaseHandler {
         let newUpdateStatement: string = "";
         newUpdateStatement += "UPDATE chart_of_accounts ";
         newUpdateStatement += `SET account_description = '${newObject.account_description}'`
-        newUpdateStatement += `SET account_active = '${newObject.account_active}'`
-        newUpdateStatement += newObject.notes ? `, SET notes = '${newObject.notes}'` : "";
-        newUpdateStatement += ` WHERE type_code = ${newObject.account_code}`
+        newUpdateStatement += `, account_active = '${newObject.account_active}'`
+        newUpdateStatement += newObject.notes ? `, notes = '${newObject.notes}'` : "";
+        newUpdateStatement += ` WHERE account_code = ${newObject.account_code}`
+
+        this.log.info(`Database Command: [${newUpdateStatement}]`);
 
         await new Promise<void>((resolve, reject) => {
             this.db.run(
@@ -493,6 +495,36 @@ export class DatabaseHandler {
         })
     }
 
+        /**
+     * Updates account's selectable column in the database. Note only meant for internal use
+     * @param newObject A version of the previous object that has had the account selectable changed
+     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
+     */
+    private async _UpdateAccountSelectable(newObject: Account): Promise<void> {
+        // Construct update statement
+        let newUpdateStatement: string = "";
+        newUpdateStatement += "UPDATE chart_of_accounts ";
+        newUpdateStatement += `SET account_selectable = '${newObject.account_selectable}'`
+        newUpdateStatement += ` WHERE account_code = ${newObject.account_code}`
+
+        this.log.info(`Database Command: [${newUpdateStatement}]`);
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                newUpdateStatement,
+                err => {
+                    if (err) {
+                        this.log.error(`Error updating Account selectable with data: new selectable [${newObject.account_selectable}]: [${err.message}]`);
+                        reject(err);
+                    } else {
+                        this.log.info(`Account [${newObject.account_description}]'s selectable updated successfully!`);
+                        resolve();
+                    }
+                }
+            )
+        })
+    }
+
     /**
      * Updates account type in the database
      * @param newObject A version of the previous object that has had everything that the caller might want to change, changed
@@ -502,13 +534,14 @@ export class DatabaseHandler {
         //are we updating active status
         let oldObject: AccountType = await this.getTypeById(newObject.type_code);
         let updatingActive = oldObject.type_active != newObject.type_active;
+        let updatingDescription = oldObject.type_description != newObject.type_description;
 
         // Construct update statement
         let newUpdateStatement: string = "";
         newUpdateStatement += "UPDATE account_types ";
         newUpdateStatement += `SET type_description = '${newObject.type_description}'`
-        newUpdateStatement += `SET type_active = '${newObject.type_active}'`
-        newUpdateStatement += newObject.notes ? `, SET notes = '${newObject.notes}'` : "";
+        newUpdateStatement += `, type_active = '${newObject.type_active}'`
+        newUpdateStatement += newObject.notes ? `, notes = '${newObject.notes}'` : "";
         newUpdateStatement += ` WHERE type_code = ${newObject.type_code}`
 
         await new Promise<void>((resolve, reject) => {
@@ -532,6 +565,16 @@ export class DatabaseHandler {
             for (let account of accountsToUpdate) {
                 account.account_active = newObject.type_active;
                 await this.UpdateAccount(account);
+            }
+        }
+
+        if(updatingDescription) {
+            let accountsToUpdate: Account[] = await this.getAccountsByType(oldObject.type_code);
+
+            for (let account of accountsToUpdate) {
+                let noTypeString = account.account_selectable.split('[')[0];
+                account.account_selectable = noTypeString + `[${newObject.type_description}]`;
+                await this._UpdateAccountSelectable(account);
             }
         }
     }

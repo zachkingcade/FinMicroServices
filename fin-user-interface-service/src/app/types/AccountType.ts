@@ -22,3 +22,8 @@ export interface AccountTypeAddReturn {
     status: string
     newTransaction: AccountType
 }
+
+export interface AccountTypeUpdateReturn {
+    status: string
+    newTransaction: AccountType
+}
