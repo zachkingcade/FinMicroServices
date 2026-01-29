@@ -27,4 +27,3 @@
 ## Testing
 
 ## Styling
-- [ ] Improve delete modal styling to match rest of UI ***(Target Release v.1.1)***

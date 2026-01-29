@@ -208,10 +208,12 @@ export class Ledger implements OnInit {
     const itemDescription = `${itemTodelete.trans_date}] [${itemTodelete.trans_description}] [${itemTodelete.amount}`;
     const dialogRef = this.dialog.open(Confirmation, {
       data: {
-        title: 'Hold up ✋',
+        title: 'Hold up',
         message: `Are you sure you want to delete [${itemDescription}]? ` +
-          "\n\n This can throw off the balance. This cannot be undone."
-      }
+          "\n\n This cannot be undone."
+      },
+      disableClose: true,
+      panelClass: "panelBody"
     });
 
     dialogRef.afterClosed().subscribe(result => {

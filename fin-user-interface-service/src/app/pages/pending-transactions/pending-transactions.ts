@@ -247,9 +247,11 @@ export class PendingTransactions {
     const itemDescription = `${this.transactionPendingList[itemIndex].trans_date}] [${this.transactionPendingList[itemIndex].trans_description}] [${this.transactionPendingList[itemIndex].amount}`;
     const dialogRef = this.dialog.open(Confirmation, {
       data: {
-        title: 'Hold up ✋',
+        title: 'Hold up',
         message: `Are you sure you want to delete [${itemDescription}]?`
-      }
+      },
+      disableClose: true,
+      panelClass: "panelBody"
     });
 
     dialogRef.afterClosed().subscribe(result => {
