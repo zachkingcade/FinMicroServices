@@ -26,7 +26,7 @@
 
                     <td class="selector">
                         <mtx-select placeholder="Select Credit" formControlName="credit">
-                            @for (item of this.accountsList; track item.account_code) {
+                            @for (item of this.accountsListSelectable; track item.account_code) {
                             <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
                             }
                         </mtx-select>
@@ -38,7 +38,7 @@
 
                     <td class="selector">
                         <mtx-select placeholder="Select Debit" formControlName="debit">
-                            @for (item of this.accountsList; track item.account_code) {
+                            @for (item of this.accountsListSelectable; track item.account_code) {
                             <mtx-option [value]="item.account_code">{{item.account_selectable}}</mtx-option>
                             }
                         </mtx-select>

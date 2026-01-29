@@ -11,6 +11,7 @@ import { Campfire } from '../../services/campfire';
 import { FeatherModule } from 'angular-feather';
 import { AccountEdit } from '../../components/account-edit/account-edit';
 import { MatDialog } from '@angular/material/dialog';
+import { AccountTypes } from '../account-types/account-types';
 
 @Component({
   selector: 'app-accounts',
@@ -23,8 +24,9 @@ export class Accounts {
   //Member Varibles
   //--------------------------------------------------------------------------------
   accountsList: Account[];
-  accountsPresentable: AccountPresentable[];
+  accountsListToShow: AccountPresentable[];
   accountTypeList: AccountType[];
+  accountTypeSelectable: AccountType[];
   @ViewChild('typeSelection') typeSelection!: MtxSelect;
   @ViewChild('inputDescription') inputDescription!: ElementRef<HTMLInputElement>;
   @ViewChild('inputNotes') inputNotes!: ElementRef<HTMLInputElement>;
@@ -41,8 +43,9 @@ export class Accounts {
     private dialog: MatDialog,
   ) {
     this.accountsList = [];
-    this.accountsPresentable = [];
+    this.accountsListToShow = [];
     this.accountTypeList = [];
+    this.accountTypeSelectable = [];
   }
 
   //--------------------------------------------------------------------------------
@@ -56,7 +59,7 @@ export class Accounts {
     this.accountsData.accountsGetAll().subscribe({
       next: async (response) => {
         this.accountsList = response;
-        this.accountsPresentable = await this.makeDataPresentable(response);
+        this.accountsListToShow = await this.makeDataPresentable(response);
         this.cdr.detectChanges();
         this.campfire.debug("Loaded account data for accounts page", response);
       },
@@ -67,6 +70,7 @@ export class Accounts {
     this.accountsData.accountTypesGetAll().subscribe({
       next: async (response) => {
         this.accountTypeList = response;
+        this.accountTypeSelectable = this.removeInactiveAccountTypes(response);
         this.cdr.detectChanges();
         this.campfire.debug("Loaded account type data for accounts page", response);
         console.log(this.accountTypeList);
@@ -121,6 +125,17 @@ export class Accounts {
         }
       })
     });
+    return resultingList;
+  }
+
+  private removeInactiveAccountTypes(list: AccountType[]): AccountType[]{
+    let resultingList: AccountType[] = [];
+    for(let accountType of list){
+      if(accountType.type_active == 'Y'){
+        resultingList.push(accountType);
+      }
+    }
+
     return resultingList;
   }
 

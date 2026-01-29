@@ -17,8 +17,6 @@
 ## Bugs
 
 ## Improvements
-- [ ] UI selectors for account types should only show enabled accounts. ***(Target Release v.1.1)***
-- [ ] UI selectors for accounts should only show enabled accounts. ***(Target Release v.1.1)***
 - [ ] Add ability to change a transactions notes. ***(Target Release v.1.1)***
 
 

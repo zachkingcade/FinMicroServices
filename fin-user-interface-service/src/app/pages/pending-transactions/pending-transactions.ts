@@ -44,6 +44,7 @@ export class PendingTransactions {
   //--------------------------------------------------------------------------------
   transactionPendingList: PendingTransaction[];
   accountsList: Account[];
+  accountsListSelectable: Account[];
   accountTypeList: AccountType[];
   typeClassList: TypeClass[];
   private formBuilder: FormBuilder;
@@ -63,6 +64,7 @@ export class PendingTransactions {
   ) {
     this.transactionPendingList = [];
     this.accountsList = [];
+    this.accountsListSelectable = [];
     this.accountTypeList = [];
     this.typeClassList = [];
     this.formBuilder = inject(FormBuilder);
@@ -114,6 +116,7 @@ export class PendingTransactions {
     this.accountData.accountsGetAll().subscribe({
       next: (response) => {
         this.accountsList = response;
+        this.accountsListSelectable = this.removeInactiveAccounts(response);
         this.cdr.detectChanges();
         this.campfire.debug("Loaded account data for pending transaction page", response);
       },
@@ -140,6 +143,16 @@ export class PendingTransactions {
       }
     })
 
+  }
+
+  private removeInactiveAccounts(list: Account[]): Account[] {
+    let resultingList: Account[] = [];
+    for (let account of list) {
+      if (account.account_active == 'Y') {
+        resultingList.push(account);
+      }
+    }
+    return resultingList;
   }
 
   async apply() {

@@ -27,6 +27,7 @@ export class Ledger implements OnInit {
   originalTransactionData: Transaction[] = [];
   transactionList: TransactionPresentable[];
   accountsList: Account[];
+  accountsListSelectable: Account[];
   accountTypeList: AccountType[];
   typeClassList: TypeClass[];
   @ViewChild('inputDate') inputDate!: ElementRef<HTMLInputElement>;
@@ -48,6 +49,7 @@ export class Ledger implements OnInit {
   ) {
     this.transactionList = [];
     this.accountsList = [];
+    this.accountsListSelectable = [];
     this.accountTypeList = [];
     this.typeClassList = [];
   }
@@ -75,6 +77,7 @@ export class Ledger implements OnInit {
     this.accountData.accountsGetAll().subscribe({
       next: (response) => {
         this.accountsList = response;
+        this.accountsListSelectable = this.removeInactiveAccounts(response);
         this.cdr.detectChanges();
         this.campfire.debug("Loaded account data for ledger page", response);
       },
@@ -136,6 +139,16 @@ export class Ledger implements OnInit {
         }
       })
     });
+    return resultingList;
+  }
+
+    private removeInactiveAccounts(list: Account[]): Account[] {
+    let resultingList: Account[] = [];
+    for (let account of list) {
+      if (account.account_active == 'Y') {
+        resultingList.push(account);
+      }
+    }
     return resultingList;
   }
 

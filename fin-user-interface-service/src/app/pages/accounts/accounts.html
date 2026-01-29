@@ -15,7 +15,7 @@
             </tr>
         </thead>
         <tbody>
-            @for (item of this.accountsPresentable; track item.account_code) {
+            @for (item of this.accountsListToShow; track item.account_code) {
             <tr>
                 <td class="columnSimpleOneLine">{{item.account_description}}</td>
                 <td class="columnSimpleOneLine">{{item.account_type}}</td>
@@ -48,7 +48,7 @@
                 <td><input type="text" id="accountTypeDescription" #inputDescription></td>
                 <td class="selector">
                     <mtx-select placeholder="Type to search" #typeSelection>
-                        @for (item of this.accountTypeList; track item.type_code) {
+                        @for (item of this.accountTypeSelectable; track item.type_code) {
                         <mtx-option [value]="item.type_code">{{item.type_description}}</mtx-option>
                         }
                     </mtx-select>
