@@ -6,7 +6,6 @@
     <table>
         <thead>
             <tr>
-                <th>Code</th>
                 <th>Description</th>
                 <th>Type</th>
                 <th>Balance</th>
@@ -18,7 +17,6 @@
         <tbody>
             @for (item of this.accountsPresentable; track item.account_code) {
             <tr>
-                <td class="columnSimpleOneLine">{{item.account_code}}</td>
                 <td class="columnSimpleOneLine">{{item.account_description}}</td>
                 <td class="columnSimpleOneLine">{{item.account_type}}</td>
                 <td class="columnSimpleOneLine">{{item.balance}}</td>

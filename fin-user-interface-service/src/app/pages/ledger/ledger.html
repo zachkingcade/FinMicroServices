@@ -6,7 +6,6 @@
     <table>
         <thead>
             <tr>
-                <th>Code</th>
                 <th>Date</th>
                 <th>Description</th>
                 <th class="amountHeaderCell">Amount</th>
@@ -20,7 +19,6 @@
         <tbody>
             @for (item of this.transactionList; track item.trans_code) {
             <tr>
-                <td class="columnSimpleOneLine">{{item.trans_code}}</td>
                 <td class="columnSimpleOneLine">{{item.trans_date}}</td>
                 <td class="columnSimpleOneLine">{{item.trans_description}}</td>
                 <td class="amountCells columnSimpleOneLine">{{(item.amount).toFixed(2)}}</td>

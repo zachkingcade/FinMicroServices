@@ -28,4 +28,3 @@
 
 ## Styling
 - [ ] Improve delete modal styling to match rest of UI ***(Target Release v.1.1)***
-- [ ] Remove Codes/Primary Keys from UI Tables ***(Target Release v.1.1)***

@@ -7,7 +7,6 @@
         <table>
             <thead>
                 <tr>
-                    <th>Code</th>
                     <th>Date</th>
                     <th>Description</th>
                     <th class="amountHeaderCell">Amount</th>
@@ -21,7 +20,6 @@
             <tbody formArrayName="rows">
                 @for (row of rows.controls; let i = $index; track i) {
                 <tr [formGroupName]="i">
-                    <td class="columnSimpleOneLine">{{ transactionPendingList[i].trans_code }}</td>
                     <td class="columnSimpleOneLine">{{ transactionPendingList[i].trans_date }}</td>
                     <td class="columnSimpleOneLine">{{ transactionPendingList[i].trans_description }}</td>
                     <td class="amountCells columnSimpleOneLine">{{ (transactionPendingList[i].amount).toFixed(2) }}</td>

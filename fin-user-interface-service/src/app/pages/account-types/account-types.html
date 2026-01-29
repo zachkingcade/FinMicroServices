@@ -6,7 +6,6 @@
     <table class="pageDataDisplayTable">
         <thead>
             <tr>
-                <th>Code</th>
                 <th>Equation Section</th>
                 <th>Description</th>
                 <th>Notes</th>
@@ -17,7 +16,6 @@
         <tbody>
             @for (item of this.accountsTypeList; track item.type_code) {
             <tr>
-                <td class="columnSimpleOneLine">{{item.type_code}}</td>
                 <td class="columnSimpleOneLine">{{item.type_class}}</td>
                 <td class="columnSimpleOneLine">{{item.type_description}}</td>
                 <td class="columnTakeExtraSpace">{{item.notes? item.notes : "-"}}</td>
