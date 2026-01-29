@@ -2,6 +2,7 @@ export interface AccountType {
     type_code: number,
     type_description: string,
     type_class: number,
+    type_active: "Y" | 'N',
     notes?: string | null
 }
 
@@ -9,6 +10,7 @@ export interface AccountTypePresentable {
     type_code?: number,
     type_description: string,
     type_class: string,
+    type_active: "Y" | 'N',
     notes?: string
 }
 

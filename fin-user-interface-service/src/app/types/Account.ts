@@ -12,6 +12,7 @@ export interface AccountPresentable {
     account_type: string,
     account_description: string,
     balance: number,
+    account_active: "Y" | "N",
     account_selectable?: string,
     notes?: string,
 }
@@ -23,6 +24,11 @@ export interface AccountDTO {
 }
 
 export interface AccountAddReturn {
+    status: string
+    newTransaction: Account
+}
+
+export interface AccountUpdateReturn {
     status: string
     newTransaction: Account
 }

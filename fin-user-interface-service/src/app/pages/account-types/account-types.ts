@@ -98,6 +98,7 @@ export class AccountTypes {
                 type_code: item.type_code,
                 type_class: classObject.class_description,
                 type_description: item.type_description,
+                type_active: item.type_active,
                 notes: item.notes ? item.notes : ""
               }
               resultingList.push(newTypePresentable);

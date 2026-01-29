@@ -8,10 +8,13 @@ import { MtxSelect, MtxSelectModule } from '@ng-matero/extensions/select';
 import { ToastrService } from 'ngx-toastr';
 import { TransactionData } from '../../services/transaction-data';
 import { Campfire } from '../../services/campfire';
+import { FeatherModule } from 'angular-feather';
+import { AccountEdit } from '../../components/account-edit/account-edit';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-accounts',
-  imports: [NavBar, CommonModule, MtxSelectModule],
+  imports: [NavBar, CommonModule, MtxSelectModule, FeatherModule],
   templateUrl: './accounts.html',
   styleUrl: './accounts.scss',
 })
@@ -19,7 +22,8 @@ export class Accounts {
   //--------------------------------------------------------------------------------
   //Member Varibles
   //--------------------------------------------------------------------------------
-  accountsList: AccountPresentable[];
+  accountsList: Account[];
+  accountsPresentable: AccountPresentable[];
   accountTypeList: AccountType[];
   @ViewChild('typeSelection') typeSelection!: MtxSelect;
   @ViewChild('inputDescription') inputDescription!: ElementRef<HTMLInputElement>;
@@ -33,9 +37,11 @@ export class Accounts {
     private accountsData: AccountsData,
     private transactionData: TransactionData,
     private cdr: ChangeDetectorRef,
-    private campfire: Campfire
+    private campfire: Campfire,
+    private dialog: MatDialog,
   ) {
     this.accountsList = [];
+    this.accountsPresentable = [];
     this.accountTypeList = [];
   }
 
@@ -49,7 +55,8 @@ export class Accounts {
   fetchData(): void {
     this.accountsData.accountsGetAll().subscribe({
       next: async (response) => {
-        this.accountsList = await this.makeDataPresentable(response);
+        this.accountsList = response;
+        this.accountsPresentable = await this.makeDataPresentable(response);
         this.cdr.detectChanges();
         this.campfire.debug("Loaded account data for accounts page", response);
       },
@@ -62,6 +69,7 @@ export class Accounts {
         this.accountTypeList = response;
         this.cdr.detectChanges();
         this.campfire.debug("Loaded account type data for accounts page", response);
+        console.log(this.accountTypeList);
       },
       error: (error) => {
         this.campfire.errorAlert(`Error fetching account type data`, error);
@@ -97,6 +105,7 @@ export class Accounts {
                 account_type: typeObject.type_description,
                 account_description: item.account_description,
                 balance: accountBalance,
+                account_active: item.account_active,
                 notes: item.notes ? item.notes : ""
               }
               resultingList.push(newTypePresentable);
@@ -153,10 +162,59 @@ export class Accounts {
   //--------------------------------------------------------------------------------
   // UI Functions
   //--------------------------------------------------------------------------------
+
   resetManualInput() {
     this.campfire.debug("Resetting UI on Accounts Page");
     this.typeSelection.value = "";
     this.inputDescription.nativeElement.value = "";
     this.inputNotes.nativeElement.value = "";
+  }
+
+  openEditModal(account_code: number) {
+    console.log(this.accountTypeList);
+
+    const original = this.accountsList.find(account => account.account_code! == account_code);
+
+    if (original == undefined) {
+      this.campfire.errorAlert(`An Error occured trying to edit account`);
+      this.campfire.quietError(`Error Occured trying to find account using account_code [${account_code}] in the openEditModal on Accounts Page`)
+    }
+
+    const originalType = this.accountTypeList.find(accountType => accountType.type_code == original!.account_type);
+
+    if (originalType == undefined) {
+      this.campfire.errorAlert(`An Error occured trying to edit account`);
+      this.campfire.quietError(`Error Occured trying to find account type using type_description [${original!.account_type}] in the openEditModal on Accounts Page`)
+    }
+
+    console.log(originalType);
+
+    const dialogRef = this.dialog.open(AccountEdit, {
+      width: '50vw',
+      data: {
+        originalAccount: original,
+        activeChangeable: (originalType!.type_active == 'Y'? true : false)
+      },
+      disableClose: true,
+      panelClass: "panelBody"
+    });
+
+    dialogRef.afterClosed().subscribe(async (result: Account) => {
+      if (!result) {
+        this.campfire.errorAlert("No changes made!");
+        return;
+      }
+      this.campfire.debug("result from Account Edit window return", result);
+
+      this.accountsData.postUpdateAccount(result).subscribe({
+        next: (response) => {
+          this.campfire.successAlert(`Account [${original!.account_description}] updated successfully!`, response);
+          this.fetchData();
+        },
+        error: (error) => {
+          this.campfire.errorAlert(`Error with updating account`, error, original);
+        }
+      })
+    });
   }
 }

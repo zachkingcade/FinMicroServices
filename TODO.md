@@ -17,12 +17,8 @@
 ## Bugs
 
 ## Improvements
-- [ ] Add ability to Enable/Disable Account Type. Doing so should do the same to all accounts of that type. Note UI selectors for account types should only show enabled accounts. ***(Target Release v.1.1)***
-- [ ] Add ability to change account type description. Doing so should change the account selectable of all accounts of that type. ***(Target Release v.1.1)***
-- [ ] Add ability to change the account type notes. ***(Target Release v.1.1)***
-- [ ] Add ability to Enable/Disable Accounts. Note UI selectors for accounts should only show enabled accounts. ***(Target Release v.1.1)***
-- [ ] Add ability to change account type description. ***(Target Release v.1.1)***
-- [ ] Add ability to change the account type notes. ***(Target Release v.1.1)***
+- [ ] UI selectors for account types should only show enabled accounts. ***(Target Release v.1.1)***
+- [ ] UI selectors for accounts should only show enabled accounts. ***(Target Release v.1.1)***
 - [ ] Add ability to change a transactions notes. ***(Target Release v.1.1)***
 
 
@@ -32,5 +28,4 @@
 
 ## Styling
 - [ ] Improve delete modal styling to match rest of UI ***(Target Release v.1.1)***
-- [ ] Improve Split modal styling to match rest of UI ***(Target Release v.1.1)***
 - [ ] Remove Codes/Primary Keys from UI Tables ***(Target Release v.1.1)***

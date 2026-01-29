@@ -1,0 +1,20 @@
+.flexInput{
+    display: flex;
+    margin-bottom: .75em;
+}
+
+.flexInputLabel{
+    width: 13em;
+}
+
+.flexInputInput{
+    width: 80%;
+    min-width: 20em;
+    max-width: 50em;
+}
+
+.flexMatToggle{
+    display: flex;
+    justify-content: center;
+    align-items: center;  
+}

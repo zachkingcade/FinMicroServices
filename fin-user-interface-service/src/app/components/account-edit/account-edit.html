@@ -1,1 +1,39 @@
-<p>account-edit works!</p>
+<div class="modalBody">
+    <h2 mat-dialog-title>Edit Account</h2>
+
+    <div mat-dialog-content>
+
+        <!-- Displays the data from the original transaction being edited -->
+        <p>Internal Account Code: {{ originalAccount.account_code }}</p>
+        <p>Account Type: <strong>{{ originalAccount.account_type }}</strong></p>
+        <p>Original Description: {{ originalAccount.account_description }}</p>
+        <p>Original Notes: {{ originalAccount.notes || "" }}</p>
+        <p>Original Active State: {{ originalAccount.account_active == 'Y'? "Active" : "Inactive" }}</p>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Account Description:</p>
+            <input id="typeDescriptionInput" class="flexInputInput" type="text" #descriptionInput>
+        </div>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Account Notes:</p>
+            <input id="notesInput" class="flexInputInput" type="text" #notesInput>
+        </div>
+
+        @if(!activeChangeable){
+        <p class="warningText">Account Type is in an inactive state, to enable account you must enable it's type.</p>
+        }
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Active:</p>
+            <mat-slide-toggle class="flexMatToggle" [disabled]="!activeChangeable" #activeState></mat-slide-toggle>
+        </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div mat-dialog-actions align="end">
+        <button class="modalButtons" mat-button (click)="cancel()">Cancel</button>
+        <button class="modalButtons" color="primary" (click)="confirm()">Confirm</button>
+    </div>
+</div>

@@ -472,10 +472,10 @@ export class DatabaseHandler {
         // Construct update statement
         let newUpdateStatement: string = "";
         newUpdateStatement += "UPDATE chart_of_accounts ";
-        newUpdateStatement += `SET account_description = '${newObject.account_description}'`
-        newUpdateStatement += `, account_active = '${newObject.account_active}'`
-        newUpdateStatement += newObject.notes ? `, notes = '${newObject.notes}'` : "";
-        newUpdateStatement += ` WHERE account_code = ${newObject.account_code}`
+        newUpdateStatement += `SET account_description = '${newObject.account_description}'`;
+        newUpdateStatement += `, account_active = '${newObject.account_active}'`;
+        newUpdateStatement += `, notes = '${newObject.notes || ""}'`;
+        newUpdateStatement += ` WHERE account_code = ${newObject.account_code}`;
 
         this.log.info(`Database Command: [${newUpdateStatement}]`);
 
@@ -541,7 +541,7 @@ export class DatabaseHandler {
         newUpdateStatement += "UPDATE account_types ";
         newUpdateStatement += `SET type_description = '${newObject.type_description}'`
         newUpdateStatement += `, type_active = '${newObject.type_active}'`
-        newUpdateStatement += newObject.notes ? `, notes = '${newObject.notes}'` : "";
+        newUpdateStatement += `, notes = '${newObject.notes || ""}'`;
         newUpdateStatement += ` WHERE type_code = ${newObject.type_code}`
 
         await new Promise<void>((resolve, reject) => {

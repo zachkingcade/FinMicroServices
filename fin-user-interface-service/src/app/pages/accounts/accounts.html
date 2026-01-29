@@ -11,16 +11,23 @@
                 <th>Type</th>
                 <th>Balance</th>
                 <th>Notes</th>
+                <!-- This is the empty header for the action buttons -->
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            @for (item of this.accountsList; track item.account_code) {
+            @for (item of this.accountsPresentable; track item.account_code) {
             <tr>
                 <td class="columnSimpleOneLine">{{item.account_code}}</td>
                 <td class="columnSimpleOneLine">{{item.account_description}}</td>
                 <td class="columnSimpleOneLine">{{item.account_type}}</td>
                 <td class="columnSimpleOneLine">{{item.balance}}</td>
                 <td class="columnTakeExtraSpace">{{item.notes? item.notes : "-"}}</td>
+                <!-- Dedicated column for buttons -->
+                <td>
+                    <button class="actionButtons edit" (click)="openEditModal(item.account_code!)"><i-feather
+                            name="edit"></i-feather></button>
+                </td>
             </tr>
             }
         </tbody>
