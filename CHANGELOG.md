@@ -20,6 +20,7 @@ TLDR: This is the very start of the project starting from nothing and bringing u
 - UI Update: overhauled UI theme to an ocean blue
 
 ## Version 1.1.0
+<b>(Workflow Clean Up)</b> <br>
 - Added: default sort orders for Account service queries
 - Added: Commit Standard and updated changelog format
 - Added: increase/decrease account indicator to ledger page's manual transaction entry fields
@@ -27,3 +28,13 @@ TLDR: This is the very start of the project starting from nothing and bringing u
 - Added: TODO tracking system
 - UI Update: Split modal now shows remaining balance
 - Added: Allowed local hosting of services on local network instead of strictly on host system
+- Added: Ability to edit active state, account description and notes for accounts
+- Added: Ability to edit active state, account type description and notes for account types
+- Added: Ability to edit notes for transactions on the ledger page
+- UI Update: Removed primary key from tables
+- UI Update: Corrected Split Modal styling to better match
+- UI Update: Corrected Delete Modal styling to better match
+- Added: Restriciton on account selection to remove all inactive accounts
+- Added: Restriciton on account type selection to remove all inactive account types
+
+## Version 1.2.0

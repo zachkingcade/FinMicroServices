@@ -1,23 +1,22 @@
 # TODO
 
 ## Core Features
-- [ ] Add transaction search filters
-- [ ] Add account type search filters
-- [ ] Add account search filters
+- [ ] Add transaction search filters ***(Target Release v.1.2)***
+- [ ] Add account type search filters ***(Target Release v.1.2)***
+- [ ] Add account search filters ***(Target Release v.1.2)***
 - [ ] Add Playbook Page
 - [ ] Add Budget Planning Page
 - [ ] Add Context Sensitive Help Buttons
 
 ## Infrastructure
-- [ ] Add Dockerfile for Accounts Service ***(Target Release v.1.1)***
-- [ ] Add Dockerfile for Fin User Interface Service ***(Target Release v.1.1)***
-- [ ] Add Dockerfile for Transaction Service ***(Target Release v.1.1)***
+- [ ] Add Dockerfile for Accounts Service
+- [ ] Add Dockerfile for Fin User Interface Service
+- [ ] Add Dockerfile for Transaction Service
 - [ ] Find a way to release a desktop version of the application
 
 ## Bugs
 
 ## Improvements
-
 
 ## Docs
 
