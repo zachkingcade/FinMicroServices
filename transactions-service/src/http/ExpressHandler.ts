@@ -3,7 +3,7 @@ import { WLog } from '../WLog.js'
 import { Logger } from 'winston'
 import { Account, AccountDTO } from '../types/Account.js'
 import { DatabaseHandler } from '../database/DatabaseHandler.js'
-import { PendingTransaction, Transaction } from '../types/Transaction.js'
+import { PendingTransaction, Transaction, UpdateTransactionNotesDTO } from '../types/Transaction.js'
 import { error } from 'console'
 import { AccountService } from './AccountService.js'
 import { TypeClass } from '../types/TypeClass.js'
@@ -149,6 +149,18 @@ export class ExpressHandler {
       } catch (error) {
         this.log.error(`Error http post: /transaction/pending/convert, unable to convert Pending transaction: ${error}`);
         res.status(500).json({ status: 'Pending Transaction convert Failed', error });
+      }
+    })
+
+    this.app.post('/transaction/updateNotes', async (req, res) => {
+      try {
+        let requestData: UpdateTransactionNotesDTO = req.body;
+        this.log.info(`Recieved command: /transaction/updateNotes with data ${JSON.stringify(requestData)}`);
+        await this.database.UpdateTransactionNotes(requestData.trans_code, requestData.notes);
+        res.status(201).json({ status: 'Transaction Notes Updated', requestData })
+      } catch (error) {
+        this.log.error(`Error http post: /transaction/updateNotes, unable to redit transaction's notes: ${error}`);
+        res.status(500).json({ status: 'Transactions notes edit Failed', error });
       }
     })
   }

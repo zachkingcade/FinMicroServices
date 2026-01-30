@@ -17,7 +17,6 @@
 ## Bugs
 
 ## Improvements
-- [ ] Add ability to change a transactions notes. ***(Target Release v.1.1)***
 
 
 ## Docs

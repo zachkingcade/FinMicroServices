@@ -38,3 +38,8 @@ export interface PendingTransaction {
     trans_description: string,
     amount: number, 
 }
+
+export interface UpdateTransactionNotesDTO {
+    trans_code: number,
+    notes: string 
+}

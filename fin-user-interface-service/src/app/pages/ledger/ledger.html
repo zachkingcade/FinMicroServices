@@ -17,7 +17,7 @@
             </tr>
         </thead>
         <tbody>
-            @for (item of this.transactionList; track item.trans_code) {
+            @for (item of this.TransactionListToShow; track item.trans_code) {
             <tr>
                 <td class="columnSimpleOneLine">{{item.trans_date}}</td>
                 <td class="columnSimpleOneLine">{{item.trans_description}}</td>
@@ -26,7 +26,9 @@
                 <td class="columnSimpleOneLine">{{item.debit_account}}</td>
                 <td class="columnTakeExtraSpace">{{item.notes? item.notes : "-"}}</td>
                 <!-- Dedicated column for buttons -->
-                <td>
+                <td class="multiButton">
+                    <button class="actionButtons edit" (click)="openEditModal(item.trans_code!)"><i-feather
+                            name="edit"></i-feather></button>
                     <button class="actionButtons trash" (click)="confirmDeletion(item.trans_code)"><i-feather
                             name="trash-2"></i-feather></button>
                 </td>

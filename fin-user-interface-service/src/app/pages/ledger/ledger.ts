@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { NavBar } from '../../components/nav-bar/nav-bar';
 import { TransactionData } from '../../services/transaction-data';
-import { Transaction, TransactionDTO, TransactionPresentable } from '../../types/Transaction';
+import { Transaction, TransactionDTO, TransactionPresentable, UpdateTransactionNotesDTO } from '../../types/Transaction';
 import { CommonModule } from '@angular/common';
 import { Account, AccountPresentable } from '../../types/Account';
 import { AccountsData } from '../../services/accounts-data';
@@ -13,6 +13,7 @@ import { Confirmation } from '../../components/confirmation/confirmation';
 import { Campfire } from '../../services/campfire';
 import { AccountType } from '../../types/AccountType';
 import { TypeClass } from '../../types/TypeClass';
+import { TransactionEdit } from '../../components/transaction-edit/transaction-edit';
 
 @Component({
   selector: 'app-ledger',
@@ -24,8 +25,8 @@ export class Ledger implements OnInit {
   //--------------------------------------------------------------------------------
   //Member Varibles
   //--------------------------------------------------------------------------------
-  originalTransactionData: Transaction[] = [];
-  transactionList: TransactionPresentable[];
+  originalTransactionData: Transaction[];
+  TransactionListToShow: TransactionPresentable[];
   accountsList: Account[];
   accountsListSelectable: Account[];
   accountTypeList: AccountType[];
@@ -47,7 +48,8 @@ export class Ledger implements OnInit {
     private dialog: MatDialog,
     private campfire: Campfire
   ) {
-    this.transactionList = [];
+    this.originalTransactionData = [];
+    this.TransactionListToShow = [];
     this.accountsList = [];
     this.accountsListSelectable = [];
     this.accountTypeList = [];
@@ -66,7 +68,7 @@ export class Ledger implements OnInit {
     this.transactionData.getAllTransactions().subscribe({
       next: async (response) => {
         this.originalTransactionData = response;
-        this.transactionList = await this.makeDataPresentable(response);
+        this.TransactionListToShow = await this.makeDataPresentable(response);
         this.cdr.detectChanges();
         this.campfire.debug("Loaded transaction data for ledger page", response);
       },
@@ -142,7 +144,7 @@ export class Ledger implements OnInit {
     return resultingList;
   }
 
-    private removeInactiveAccounts(list: Account[]): Account[] {
+  private removeInactiveAccounts(list: Account[]): Account[] {
     let resultingList: Account[] = [];
     for (let account of list) {
       if (account.account_active == 'Y') {
@@ -264,6 +266,47 @@ export class Ledger implements OnInit {
     }
 
     return creditOrDebit == "credit" ? typeClass!.credit_effect : typeClass!.debit_effect;
+  }
+
+  openEditModal(trans_code: number) {
+    const original = this.TransactionListToShow.find(transaction => transaction.trans_code! == trans_code);
+
+    if (original == undefined) {
+      this.campfire.errorAlert(`An Error occured trying to edit account`);
+      this.campfire.quietError(`Error Occured trying to find transaction using trans_code [${trans_code}] in the openEditModal on Ledger Page`)
+    }
+
+    const dialogRef = this.dialog.open(TransactionEdit, {
+      width: '50vw',
+      data: {
+        originalAccount: original,
+      },
+      disableClose: true,
+      panelClass: "panelBody"
+    });
+
+    dialogRef.afterClosed().subscribe(async (result: string) => {
+      if (result == null) {
+        this.campfire.errorAlert("No changes made!");
+        return;
+      }
+      this.campfire.debug("result from Account Edit window return", result);
+
+      let newDTO: UpdateTransactionNotesDTO = {
+        trans_code: original!.trans_code,
+        notes: result
+      }
+
+      this.transactionData.transactionNotesEdit(newDTO).subscribe({
+        next: (response) => {
+          this.campfire.successAlert(`Transaction [${original!.trans_description}] updated successfully!`, response);
+          this.fetchData();
+        },
+        error: (error) => {
+          this.campfire.errorAlert(`Error with updating transaction`, error, original);
+        }
+      })
+    });
   }
 
 }

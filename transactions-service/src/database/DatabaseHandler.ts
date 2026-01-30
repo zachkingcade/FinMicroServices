@@ -302,4 +302,38 @@ export class DatabaseHandler {
             )
         })
     }
+
+    //--------------------------------------------------------------------------------
+    //Updating Records
+    //--------------------------------------------------------------------------------
+
+    /**
+     * Updates Transaction Notes in the database
+     * @param newNotes The notes to apply to this transaction
+     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data
+     */
+    async UpdateTransactionNotes(trans_code: number, newNotes: string): Promise<void> {
+        // Construct update statement
+        let newUpdateStatement: string = "";
+        newUpdateStatement += "UPDATE ledger_transactions ";
+        newUpdateStatement += `SET notes = '${newNotes || ""}'`;
+        newUpdateStatement += ` WHERE trans_code = ${trans_code}`;
+
+        this.log.info(`Database Command: [${newUpdateStatement}]`);
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                newUpdateStatement,
+                err => {
+                    if (err) {
+                        this.log.error(`Error updating Transaction with trans_code [${trans_code}],notes [${newNotes}]: [${err.message}]`);
+                        reject(err);
+                    } else {
+                        this.log.info(`Transaction [${trans_code}] updated successfully!`);
+                        resolve();
+                    }
+                }
+            )
+        })
+    }
 }

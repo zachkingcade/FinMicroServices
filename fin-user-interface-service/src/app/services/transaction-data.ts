@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PendingTransaction, Transaction, TransactionAddReturn, TransactionDTO } from '../types/Transaction';
+import { PendingTransaction, Transaction, TransactionAddReturn, TransactionDTO, UpdateTransactionNotesDTO } from '../types/Transaction';
 import { Campfire } from './campfire';
 
 @Injectable({
@@ -61,4 +61,11 @@ export class TransactionData {
     this.campfire.debug("Transactions Service Executing HTTP POST /transaction/pending/remove", transactionToDelete);
     return this.http.post<TransactionAddReturn>("/transaction/pending/remove", transactionToDelete);
   }
+
+  transactionNotesEdit(transactionNotesEditDTO: UpdateTransactionNotesDTO) {
+    this.campfire.debug("Transactions Service Executing HTTP POST /transaction/updateNotes", transactionNotesEditDTO);
+    return this.http.post<TransactionAddReturn>("/transaction/updateNotes", transactionNotesEditDTO);
+  }
+
+  
 }
