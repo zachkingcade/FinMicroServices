@@ -1,6 +1,20 @@
 <!-- Navigation Bar -->
 <app-nav-bar></app-nav-bar>
 
+<div class="tableOptions">
+    <button class="actionButtons edit" (click)="openFilterModal()"><i-feather name="filter"></i-feather></button>
+
+    <p class="sortOrderSelectLabel">Sort Order:</p>
+    <select class="sortOrderSelect" (change)="sortTableEventWrapper($event)">
+        <option>Created Order Ascending</option>
+        <option>Created Order Descending</option>
+        <option>Description Ascending</option>
+        <option>Description Descending</option>
+        <option>Group By Equation Section</option>
+    </select>
+
+</div>
+
 <!-- Table that displays current account types -->
 <div class="pageDataDisplayTableDiv">
     <table class="pageDataDisplayTable">
@@ -14,14 +28,15 @@
             </tr>
         </thead>
         <tbody>
-            @for (item of this.accountsTypeList; track item.type_code) {
+            @for (item of this.accountsTypeListToShow; track item.type_code) {
             <tr>
                 <td class="columnSimpleOneLine">{{item.type_class}}</td>
                 <td class="columnSimpleOneLine">{{item.type_description}}</td>
                 <td class="columnTakeExtraSpace">{{item.notes? item.notes : "-"}}</td>
                 <!-- Dedicated column for buttons -->
                 <td>
-                    <button class="actionButtons edit" (click)="openEditModal(item.type_code!)"><i-feather name="edit"></i-feather></button>
+                    <button class="actionButtons edit" (click)="openEditModal(item.type_code!)"><i-feather
+                            name="edit"></i-feather></button>
                 </td>
             </tr>
             }
@@ -44,7 +59,7 @@
             <tr>
                 <td class="selector">
                     <mtx-select placeholder="Type to search" #classSelection>
-                        @for (item of this.accountsClassList; track item.class_code) {
+                        @for (item of this.typeClassList; track item.class_code) {
                         <mtx-option [value]="item.class_code">{{item.class_description}}</mtx-option>
                         }
                     </mtx-select>

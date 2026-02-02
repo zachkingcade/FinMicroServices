@@ -414,7 +414,7 @@ export class Ledger implements OnInit {
         this.campfire.errorAlert("No changes made!");
         return;
       }
-      this.campfire.debug("result from Account Edit window return", result);
+      this.campfire.debug("result from Transaction Edit window return", result);
 
       let newDTO: UpdateTransactionNotesDTO = {
         trans_code: original!.trans_code,
@@ -462,7 +462,7 @@ export class Ledger implements OnInit {
         this.campfire.errorAlert("Error: Transaction Filter Screen returned unknown status");
       }
 
-      this.campfire.debug("result from Account Edit window return", result);
+      this.campfire.debug("result from Transaction Edit window return", result);
     });
   }
 

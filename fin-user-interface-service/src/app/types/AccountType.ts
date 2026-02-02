@@ -1,3 +1,5 @@
+import { TypeClass } from "./TypeClass"
+
 export interface AccountType {
     type_code: number,
     type_description: string,
@@ -28,4 +30,17 @@ export interface AccountTypeAddReturn {
 export interface AccountTypeUpdateReturn {
     status: string
     newTransaction: AccountType
+}
+
+export interface AccountTypeFilters {
+    typeClassFilter: TypeClass[] | null,
+    descriptionContains: string,
+    notesContains: string,
+    includeInactive: boolean,
+    hideActive: boolean
+}
+
+export interface AccountTypeFiltersReturn {
+    status: string,
+    accountTypeFilters: AccountTypeFilters
 }
