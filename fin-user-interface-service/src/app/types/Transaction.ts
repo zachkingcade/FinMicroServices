@@ -1,3 +1,6 @@
+import { Account } from "./Account"
+import { AccountType } from "./AccountType"
+
 export interface Transaction {
     trans_code: number,
     trans_date: string,
@@ -36,10 +39,24 @@ export interface PendingTransaction {
     trans_code?: number,
     trans_date: string,
     trans_description: string,
-    amount: number, 
+    amount: number,
 }
 
 export interface UpdateTransactionNotesDTO {
     trans_code: number,
-    notes: string 
+    notes: string
+}
+
+export interface TransactionFilters {
+    dateRangeStart: Date | null,
+    dateRangeEnd: Date | null,
+    descriptionContains: string,
+    accountsFilter: Account[],
+    accountTypesFilter: AccountType[],
+    notesContains: string,
+}
+
+export interface TransactionFilterReturnObject {
+    status: string,
+    transactionFitlers: TransactionFilters
 }

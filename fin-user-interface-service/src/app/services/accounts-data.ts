@@ -56,7 +56,6 @@ export class AccountsData {
 
   postUpdateAccount(bodyData: Account): Observable<AccountUpdateReturn> {
     this.campfire.debug("Accounts Service Executing HTTP POST /account/update");
-    console.log(`DEBUGGING:`, bodyData);
     return this.http.post<AccountUpdateReturn>("/account/update", bodyData);
   }
 

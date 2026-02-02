@@ -73,7 +73,6 @@ export class Accounts {
         this.accountTypeSelectable = this.removeInactiveAccountTypes(response);
         this.cdr.detectChanges();
         this.campfire.debug("Loaded account type data for accounts page", response);
-        console.log(this.accountTypeList);
       },
       error: (error) => {
         this.campfire.errorAlert(`Error fetching account type data`, error);
@@ -186,8 +185,6 @@ export class Accounts {
   }
 
   openEditModal(account_code: number) {
-    console.log(this.accountTypeList);
-
     const original = this.accountsList.find(account => account.account_code! == account_code);
 
     if (original == undefined) {
@@ -201,8 +198,6 @@ export class Accounts {
       this.campfire.errorAlert(`An Error occured trying to edit account`);
       this.campfire.quietError(`Error Occured trying to find account type using type_description [${original!.account_type}] in the openEditModal on Accounts Page`)
     }
-
-    console.log(originalType);
 
     const dialogRef = this.dialog.open(AccountEdit, {
       width: '50vw',

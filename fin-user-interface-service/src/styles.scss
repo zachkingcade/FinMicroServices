@@ -132,9 +132,9 @@ input:focus {
 .pageDataDisplayTableDiv {
   position: relative;
   background-color: #CAE9FF;
-  height: 75vh;
+  height: 80vh;
   width: calc(100vw - 20rem);
-  top: 3rem;
+  top: 2rem;
   left: 10rem;
   z-index: 1;
   overflow-y: auto;
@@ -142,7 +142,7 @@ input:focus {
 
 .manualInput {
   position: relative;
-  top: 3.5em;
+  top: 2.5em;
   background-color: #CAE9FF;
   width: calc(100vw - 20rem);
   left: 10rem;

@@ -1,0 +1,53 @@
+<div class="modalBody">
+    <h2 mat-dialog-title>Ledger Filters</h2>
+
+    <div mat-dialog-content>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Range Start Date:</p>
+            <input type="date" #inputStartDate>
+        </div>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Range End Date:</p>
+            <input type="date" #inputEndDate>
+        </div>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Transaction Description Contains</p>
+            <input id="notesInput" class="flexInputInput" type="text" #descriptionContainsInput>
+        </div>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Only Show Selected Accounts:</p>
+            <mtx-select [multiple]="true" placeholder="Type to search" class="flexInputInput multiSelector" #selectedAccountsInputList>
+                @for (item of this.accountsList; track item.account_code) {
+                <mtx-option [value]="item">{{item.account_selectable}}</mtx-option>
+                }
+            </mtx-select>
+        </div>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Only Show Selected Accounts Types:</p>
+            <mtx-select [multiple]="true" placeholder="Type to search" class="flexInputInput multiSelector" #selectedAccountTypesInputList>
+                @for (item of this.accountTypeList; track item.type_code) {
+                <mtx-option [value]="item">{{item.type_description}}</mtx-option>
+                }
+            </mtx-select>
+        </div>
+
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Transaction Notes Contains</p>
+            <input id="notesInput" class="flexInputInput" type="text" #notesContainsInput>
+        </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div mat-dialog-actions align="end">
+        <button class="modalButtons" mat-button (click)="cancel()">Cancel</button>
+        <button class="modalButtons" mat-button (click)="clear()">Clear</button>
+        <button class="modalButtons" color="primary" (click)="confirm()">Apply</button>
+    </div>
+</div>

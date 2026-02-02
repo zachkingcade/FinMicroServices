@@ -1,7 +1,6 @@
 # TODO
 
 ## Core Features
-- [ ] Add transaction search filters ***(Target Release v.1.2)***
 - [ ] Add account type search filters ***(Target Release v.1.2)***
 - [ ] Add account search filters ***(Target Release v.1.2)***
 - [ ] Add Playbook Page

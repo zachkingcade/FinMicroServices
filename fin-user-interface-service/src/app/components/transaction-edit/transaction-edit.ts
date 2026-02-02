@@ -27,7 +27,6 @@ export class TransactionEdit implements AfterViewInit {
     private campfire: Campfire,
     private cdr: ChangeDetectorRef
   ) {
-    console.log(this.data);
     this.originalTransaction = this.data.originalAccount;
   }
 

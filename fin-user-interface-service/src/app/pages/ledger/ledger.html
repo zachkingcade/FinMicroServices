@@ -1,6 +1,19 @@
 <!-- Navigation Bar -->
 <app-nav-bar></app-nav-bar>
 
+<div class="tableOptions">
+    <button class="actionButtons edit" (click)="openFilterModal()"><i-feather name="filter"></i-feather></button>
+    
+    <p class="sortOrderSelectLabel">Sort Order:</p>
+    <select class="sortOrderSelect" (change)="sortTableEventWrapper($event)">
+        <option>Date Ascending</option>
+        <option>Date Descending</option>
+        <option>Amount (Small to Large)</option>
+        <option>Amount (Large to Small)</option>
+    </select>
+
+</div>
+
 <!-- Table that displays current transactions -->
 <div class="pageDataDisplayTableDiv">
     <table>

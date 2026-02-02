@@ -31,10 +31,8 @@ export class AccountEdit implements AfterViewInit {
     private campfire: Campfire,
     private cdr: ChangeDetectorRef
   ) {
-    console.log(this.data);
     this.originalAccount = this.data.originalAccount;
     this.activeChangeable = this.data.activeChangeable;
-    console.log(this.activeChangeable);
   }
 
   ngAfterViewInit() {

@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { NavBar } from '../../components/nav-bar/nav-bar';
 import { TransactionData } from '../../services/transaction-data';
-import { Transaction, TransactionDTO, TransactionPresentable, UpdateTransactionNotesDTO } from '../../types/Transaction';
+import { Transaction, TransactionDTO, TransactionFilterReturnObject, TransactionFilters, TransactionPresentable, UpdateTransactionNotesDTO } from '../../types/Transaction';
 import { CommonModule } from '@angular/common';
 import { Account, AccountPresentable } from '../../types/Account';
 import { AccountsData } from '../../services/accounts-data';
@@ -14,6 +14,7 @@ import { Campfire } from '../../services/campfire';
 import { AccountType } from '../../types/AccountType';
 import { TypeClass } from '../../types/TypeClass';
 import { TransactionEdit } from '../../components/transaction-edit/transaction-edit';
+import { LedgerFilters } from '../../components/filters/ledger-filters/ledger-filters';
 
 @Component({
   selector: 'app-ledger',
@@ -25,12 +26,21 @@ export class Ledger implements OnInit {
   //--------------------------------------------------------------------------------
   //Member Varibles
   //--------------------------------------------------------------------------------
+
+  //Data lists
   originalTransactionData: Transaction[];
   TransactionListToShow: TransactionPresentable[];
   accountsList: Account[];
   accountsListSelectable: Account[];
   accountTypeList: AccountType[];
   typeClassList: TypeClass[];
+
+  //Sorts and Filter varibles
+  sort: string;
+  transactionFilters!: TransactionFilters;
+
+
+  //HTML view members
   @ViewChild('inputDate') inputDate!: ElementRef<HTMLInputElement>;
   @ViewChild('inputDescription') inputDescription!: ElementRef<HTMLInputElement>;
   @ViewChild('inputAmount') inputAmount!: ElementRef<HTMLInputElement>;
@@ -54,6 +64,10 @@ export class Ledger implements OnInit {
     this.accountsListSelectable = [];
     this.accountTypeList = [];
     this.typeClassList = [];
+
+    //Sort and Filter Defaults
+    this.sort = "Date Ascending";
+    this.resetDefaultFilters();
   }
 
   //--------------------------------------------------------------------------------
@@ -68,8 +82,7 @@ export class Ledger implements OnInit {
     this.transactionData.getAllTransactions().subscribe({
       next: async (response) => {
         this.originalTransactionData = response;
-        this.TransactionListToShow = await this.makeDataPresentable(response);
-        this.cdr.detectChanges();
+        this.prepareTransactionListToShow(response);
         this.campfire.debug("Loaded transaction data for ledger page", response);
       },
       error: (error) => {
@@ -144,6 +157,13 @@ export class Ledger implements OnInit {
     return resultingList;
   }
 
+  private async prepareTransactionListToShow(unpreparedTransacitonsList: Transaction[]) {
+    let filteredTransactions = this.FilterTransactions(unpreparedTransacitonsList)
+    this.TransactionListToShow = await this.makeDataPresentable(filteredTransactions);
+    this.sortTable(this.sort);
+    this.cdr.detectChanges();
+  }
+
   private removeInactiveAccounts(list: Account[]): Account[] {
     let resultingList: Account[] = [];
     for (let account of list) {
@@ -202,6 +222,110 @@ export class Ledger implements OnInit {
       result = false;
     }
     return result;
+  }
+
+  private resetDefaultFilters() {
+    this.transactionFilters = {
+      dateRangeStart: null,
+      dateRangeEnd: null,
+      descriptionContains: "",
+      accountsFilter: [],
+      accountTypesFilter: [],
+      notesContains: ""
+    };
+  }
+
+  public sortTableEventWrapper(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    this.sortTable(selectElement.value);
+  }
+
+  private sortTable(sortValue: string) {
+    switch (sortValue) {
+      case "Date Ascending":
+        this.TransactionListToShow.sort((transactionA, transactionB) => {
+          return new Date(transactionA.trans_date).getTime() - new Date(transactionB.trans_date).getTime();
+        })
+        break;
+
+      case "Date Descending":
+        this.TransactionListToShow.sort((transactionA, transactionB) => {
+          return new Date(transactionB.trans_date).getTime() - new Date(transactionA.trans_date).getTime();
+        })
+        break;
+
+      case "Amount (Small to Large)":
+        this.TransactionListToShow.sort((transactionA, transactionB) => {
+          return transactionA.amount - transactionB.amount;
+        })
+        break;
+
+      case "Amount (Large to Small)":
+        this.TransactionListToShow.sort((transactionA, transactionB) => {
+          return transactionB.amount - transactionA.amount;
+        })
+        break;
+
+      default:
+        this.campfire.errorAlert('Internal error unable to sort transaction table');
+        break;
+    }
+    this.cdr.detectChanges();
+  }
+
+  FilterTransactions(transactionList: Transaction[]): Transaction[] {
+    let resultingList: Transaction[] = transactionList;
+
+    //Date range
+    if (this.transactionFilters.dateRangeStart && this.transactionFilters.dateRangeStart != new Date(0)) {
+      resultingList = resultingList.filter(transaction => (new Date(transaction.trans_date) >= this.transactionFilters.dateRangeStart!));
+    }
+    if (this.transactionFilters.dateRangeEnd && this.transactionFilters.dateRangeEnd != new Date(0)) {
+      resultingList = resultingList.filter(transaction => (new Date(transaction.trans_date) <= this.transactionFilters.dateRangeEnd!));
+    }
+
+    //description Contains
+    if (this.transactionFilters.descriptionContains) {
+      resultingList = resultingList.filter(transaction => ((transaction.trans_description.toLowerCase()).includes(this.transactionFilters.descriptionContains.toLowerCase())));
+    }
+
+    //Only Including Accounts
+    if (this.transactionFilters.accountsFilter != null && this.transactionFilters.accountsFilter.length != 0) {
+      resultingList = resultingList.filter((transaction) => {
+        let acceptableAccount: boolean = false;
+        for (let account of this.transactionFilters.accountsFilter) {
+          if (transaction.credit_account == account.account_code || transaction.debit_account == account.account_code) {
+            acceptableAccount = true;
+          }
+        }
+        return acceptableAccount;
+      })
+    }
+
+    //Only Including Account Types
+    if (this.transactionFilters.accountTypesFilter != null && this.transactionFilters.accountTypesFilter.length != 0) {
+      resultingList = resultingList.filter((transaction) => {
+        let acceptableAccountType: boolean = false;
+        let creditAccount = this.accountsList.find(account => account.account_code == transaction.credit_account);
+        let debitAccount = this.accountsList.find(account => account.account_code == transaction.debit_account);
+        let creditType = this.accountTypeList.find(accountType => accountType.type_code = creditAccount!.account_type);
+        let debitType = this.accountTypeList.find(accountType => accountType.type_code = debitAccount!.account_type);
+
+        for (let accountType of this.transactionFilters.accountTypesFilter) {
+          if (creditType?.type_code == accountType.type_code || debitType?.type_code == accountType.type_code) {
+            acceptableAccountType = true;
+          }
+        }
+        return acceptableAccountType;
+      })
+    }
+
+    //Notes Contains
+    if (this.transactionFilters.notesContains) {
+      resultingList = resultingList.filter(transaction => (((transaction.notes || "").toLowerCase()).includes(this.transactionFilters.notesContains.toLowerCase())));
+    }
+
+    return resultingList;
   }
 
 
@@ -306,6 +430,39 @@ export class Ledger implements OnInit {
           this.campfire.errorAlert(`Error with updating transaction`, error, original);
         }
       })
+    });
+  }
+
+  openFilterModal() {
+
+    const dialogRef = this.dialog.open(LedgerFilters, {
+      width: '70em',
+      data: {
+        accountsList: this.accountsList,
+        accountTypeList: this.accountTypeList,
+        transactionFilters: this.transactionFilters
+      },
+      disableClose: true,
+      panelClass: "panelBody"
+    });
+
+    dialogRef.afterClosed().subscribe(async (result: TransactionFilterReturnObject) => {
+      if (result == null) {
+        this.campfire.errorAlert("No changes made!");
+        return;
+      }
+
+      if (result.status == "clear") {
+        this.resetDefaultFilters();
+        this.prepareTransactionListToShow(this.originalTransactionData);
+      } else if (result.status == "apply") {
+        this.transactionFilters = result.transactionFitlers;
+        this.prepareTransactionListToShow(this.originalTransactionData);
+      } else {
+        this.campfire.errorAlert("Error: Transaction Filter Screen returned unknown status");
+      }
+
+      this.campfire.debug("result from Account Edit window return", result);
     });
   }
 
