@@ -38,3 +38,10 @@ TLDR: This is the very start of the project starting from nothing and bringing u
 - Added: Restriciton on account type selection to remove all inactive account types
 
 ## Version 1.2.0
+<b>(Fitlers and sorts)</b> <br>
+- Added: Sorting the accounts table
+- Added: Sorting the Account types table
+- Added: Sorting the Ledger table
+- Added: Filters to better organized the data of the accounts table
+- Added: Filters to better organized the data of the account types table
+- Added: Filters to better organized the data of the ledger table

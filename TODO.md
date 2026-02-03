@@ -1,7 +1,6 @@
 # TODO
 
 ## Core Features
-- [ ] Add account search filters ***(Target Release v.1.2)***
 - [ ] Add Playbook Page
 - [ ] Add Budget Planning Page
 - [ ] Add Context Sensitive Help Buttons
