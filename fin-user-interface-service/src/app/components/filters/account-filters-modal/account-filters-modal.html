@@ -1,0 +1,44 @@
+<div class="modalBody">
+    <h2 mat-dialog-title>Account Filters</h2>
+
+    <div mat-dialog-content>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Account Description Contains</p>
+            <input id="notesInput" class="flexInputInput" type="text" #descriptionContainsInput>
+        </div>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Only Show Selected Account Types:</p>
+            <mtx-select [multiple]="true" placeholder="Type to search" class="flexInputInput multiSelector"
+                #selectedaccountTypeInputList>
+                @for (item of this.accountTypeList; track item.type_code) {
+                <mtx-option [value]="item">{{item.type_description}}</mtx-option>
+                }
+            </mtx-select>
+        </div>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Account Notes Contains</p>
+            <input id="notesInput" class="flexInputInput" type="text" #notesContainsInput>
+        </div>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Include Inactive:</p>
+            <mat-slide-toggle class="flexMatToggle" #includeInactive></mat-slide-toggle>
+        </div>
+
+        <div class="flexInput">
+            <p class="flexInputLabel">Hide Active:</p>
+            <mat-slide-toggle class="flexMatToggle" #hideActive></mat-slide-toggle>
+        </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div mat-dialog-actions align="end">
+        <button class="modalButtons" mat-button (click)="cancel()">Cancel</button>
+        <button class="modalButtons" mat-button (click)="clear()">Clear</button>
+        <button class="modalButtons" color="primary" (click)="confirm()">Apply</button>
+    </div>
+</div>

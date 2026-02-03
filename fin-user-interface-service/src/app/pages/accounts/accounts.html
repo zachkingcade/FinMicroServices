@@ -1,6 +1,22 @@
 <!-- Navigation Bar -->
 <app-nav-bar></app-nav-bar>
 
+<div class="tableOptions">
+    <button class="actionButtons edit" (click)="openFilterModal()"><i-feather name="filter"></i-feather></button>
+
+    <p class="sortOrderSelectLabel">Sort Order:</p>
+    <select class="sortOrderSelect" (change)="sortTableEventWrapper($event)">
+        <option>Group By Account Type</option>
+        <option>Description Ascending</option>
+        <option>Description Descending</option>
+        <option>Created Order Ascending</option>
+        <option>Created Order Descending</option>
+        <option>Balance (Small to Large)</option>
+        <option>Balance (Large to Small)</option>
+    </select>
+
+</div>
+
 <!-- Table that displays current account types -->
 <div class="pageDataDisplayTableDiv">
     <table>

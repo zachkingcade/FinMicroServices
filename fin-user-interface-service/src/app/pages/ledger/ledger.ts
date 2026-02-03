@@ -14,7 +14,7 @@ import { Campfire } from '../../services/campfire';
 import { AccountType } from '../../types/AccountType';
 import { TypeClass } from '../../types/TypeClass';
 import { TransactionEdit } from '../../components/transaction-edit/transaction-edit';
-import { LedgerFilters } from '../../components/filters/ledger-filters/ledger-filters';
+import { LedgerFilters } from '../../components/filters/ledger-filters-Modal/ledger-filters';
 
 @Component({
   selector: 'app-ledger',

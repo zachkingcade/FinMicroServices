@@ -1,3 +1,5 @@
+import { AccountType } from "./AccountType"
+
 export interface Account {
     account_code: number,
     account_type: number,
@@ -31,4 +33,17 @@ export interface AccountAddReturn {
 export interface AccountUpdateReturn {
     status: string
     newTransaction: Account
+}
+
+export interface AccountFilters {
+    descriptionContains: string,
+    accountTypeFilter: AccountType[] | null,
+    notesContains: string,
+    includeInactive: boolean,
+    hideActive: boolean
+}
+
+export interface AccountFiltersReturn {
+    status: string,
+    accountFilters: AccountFilters
 }
