@@ -4,6 +4,7 @@ import { WLog } from '../WLog.js';
 import type { AccountType } from '../types/AccountType.js';
 import type { Account } from '../types/Account.js';
 import { TypeClass } from '../types/TypeClass.js';
+import type { BudgetPlan, BudgetIncome, BudgetRow, BudgetRowAmount } from '../types/Budget.js';
 
 export class DatabaseHandler {
 
@@ -25,6 +26,13 @@ export class DatabaseHandler {
 
     selectTypeClassAll: string = "SELECT * FROM type_classes;";
     selectTypeClassById: string = "SELECT * FROM type_classes where class_code = ?;";
+
+    selectBudgetPlansAll: string = "SELECT * FROM budget_plans order by plan_id;";
+    selectBudgetPlanById: string = "SELECT * FROM budget_plans where plan_id = ?;";
+    selectBudgetIncomesByPlanId: string = "SELECT * FROM budget_incomes where plan_id = ? order by income_id;";
+    selectBudgetRowsByPlanId: string = "SELECT * FROM budget_rows where plan_id = ? order by row_id;";
+    selectBudgetRowAmountsByRowId: string = "SELECT * FROM budget_row_amounts where row_id = ?;";
+    selectBudgetRowAmountsByPlanId: string = "SELECT a.* FROM budget_row_amounts a JOIN budget_rows r ON a.row_id = r.row_id WHERE r.plan_id = ?;";
 
     //--------------------------------------------------------------------------------
     //Class Setup
@@ -125,6 +133,92 @@ export class DatabaseHandler {
                         reject(err);
                     } else {
                         this.log.info('type_classes table created or already exists.');
+                        resolve();
+                    }
+                }
+            );
+        })
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                `CREATE TABLE IF NOT EXISTS budget_plans (
+            plan_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            planning_period TEXT NOT NULL
+            )`,
+                err => {
+                    if (err) {
+                        this.log.error(`Error creating budget_plans: [${err.message}]`);
+                        reject(err);
+                    } else {
+                        this.log.info('budget_plans table created or already exists.');
+                        resolve();
+                    }
+                }
+            );
+        })
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                `CREATE TABLE IF NOT EXISTS budget_incomes (
+            income_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            plan_id INTEGER NOT NULL,
+            name TEXT NULL,
+            amount DECIMAL(10, 2) NOT NULL,
+            interval_type TEXT NOT NULL,
+            interval_count INTEGER NOT NULL,
+            FOREIGN KEY (plan_id) REFERENCES budget_plans(plan_id)
+            )`,
+                err => {
+                    if (err) {
+                        this.log.error(`Error creating budget_incomes: [${err.message}]`);
+                        reject(err);
+                    } else {
+                        this.log.info('budget_incomes table created or already exists.');
+                        resolve();
+                    }
+                }
+            );
+        })
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                `CREATE TABLE IF NOT EXISTS budget_rows (
+            row_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            plan_id INTEGER NOT NULL,
+            account_code INTEGER NOT NULL,
+            FOREIGN KEY (plan_id) REFERENCES budget_plans(plan_id),
+            FOREIGN KEY (account_code) REFERENCES chart_of_accounts(account_code),
+            UNIQUE(plan_id, account_code)
+            )`,
+                err => {
+                    if (err) {
+                        this.log.error(`Error creating budget_rows: [${err.message}]`);
+                        reject(err);
+                    } else {
+                        this.log.info('budget_rows table created or already exists.');
+                        resolve();
+                    }
+                }
+            );
+        })
+
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(
+                `CREATE TABLE IF NOT EXISTS budget_row_amounts (
+            row_id INTEGER NOT NULL,
+            income_id INTEGER NOT NULL,
+            amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
+            PRIMARY KEY (row_id, income_id),
+            FOREIGN KEY (row_id) REFERENCES budget_rows(row_id),
+            FOREIGN KEY (income_id) REFERENCES budget_incomes(income_id)
+            )`,
+                err => {
+                    if (err) {
+                        this.log.error(`Error creating budget_row_amounts: [${err.message}]`);
+                        reject(err);
+                    } else {
+                        this.log.info('budget_row_amounts table created or already exists.');
                         resolve();
                     }
                 }
@@ -577,5 +671,224 @@ export class DatabaseHandler {
                 await this._UpdateAccountSelectable(account);
             }
         }
+    }
+
+    //--------------------------------------------------------------------------------
+    // Budget - Validation
+    //--------------------------------------------------------------------------------
+
+    async validateAccountIsAsset(account_code: number): Promise<boolean> {
+        const account = await this.getAccountById(account_code);
+        const accountType = await this.getTypeById(account.account_type);
+        const typeClassRow = await new Promise<TypeClass | undefined>((resolve, reject) => {
+            this.db.get(this.selectTypeClassById, [accountType.type_class], (err, row) => err ? reject(err) : resolve(row as TypeClass));
+        });
+        return typeClassRow?.class_description === 'Asset';
+    }
+
+    //--------------------------------------------------------------------------------
+    // Budget - Plans
+    //--------------------------------------------------------------------------------
+
+    async addBudgetPlan(name: string, planning_period: string): Promise<number> {
+        const stmt = "INSERT INTO budget_plans (name, planning_period) VALUES (\"" + name + "\", \"" + planning_period + "\");";
+        return new Promise<number>((resolve, reject) => {
+            this.db.run(stmt, function (err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(this.lastID);
+                }
+            });
+        });
+    }
+
+    async getAllBudgetPlans(): Promise<BudgetPlan[]> {
+        const results: any = [];
+        await new Promise<void>((resolve, reject) => {
+            this.db.all(this.selectBudgetPlansAll, [], (err, rows) => {
+                if (err) reject(err);
+                else { results.push(...(rows || [])); resolve(); }
+            });
+        });
+        return results;
+    }
+
+    async getBudgetPlanById(plan_id: number): Promise<BudgetPlan | null> {
+        const row: any = await new Promise((resolve, reject) => {
+            this.db.get(this.selectBudgetPlanById, [plan_id], (err, r) => err ? reject(err) : resolve(r));
+        });
+        return row || null;
+    }
+
+    async updateBudgetPlan(plan_id: number, name: string, planning_period: string): Promise<void> {
+        const stmt = "UPDATE budget_plans SET name = \"" + name + "\", planning_period = \"" + planning_period + "\" WHERE plan_id = " + plan_id;
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(stmt, err => err ? reject(err) : resolve());
+        });
+    }
+
+    async deleteBudgetPlan(plan_id: number): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
+            this.db.run("DELETE FROM budget_row_amounts WHERE row_id IN (SELECT row_id FROM budget_rows WHERE plan_id = " + plan_id + ")", err => err ? reject(err) : resolve());
+        });
+        await new Promise<void>((resolve, reject) => {
+            this.db.run("DELETE FROM budget_rows WHERE plan_id = " + plan_id, err => err ? reject(err) : resolve());
+        });
+        await new Promise<void>((resolve, reject) => {
+            this.db.run("DELETE FROM budget_incomes WHERE plan_id = " + plan_id, err => err ? reject(err) : resolve());
+        });
+        await new Promise<void>((resolve, reject) => {
+            this.db.run("DELETE FROM budget_plans WHERE plan_id = " + plan_id, err => err ? reject(err) : resolve());
+        });
+    }
+
+    async duplicateBudgetPlan(plan_id: number): Promise<number> {
+        const plan = await this.getBudgetPlanById(plan_id);
+        if (!plan) throw new Error("Budget plan not found.");
+        const newName = (plan.name || "") + " - copy";
+        const newPlanId = await this.addBudgetPlan(newName, plan.planning_period);
+        const incomes = await this.getBudgetIncomesByPlanId(plan_id);
+        const incomeIdMap = new Map<number, number>();
+        for (const inc of incomes) {
+            const newIncomeId = await this.addBudgetIncome(newPlanId, inc.name ?? null, inc.amount, inc.interval_type, inc.interval_count);
+            if (inc.income_id != null) incomeIdMap.set(inc.income_id, newIncomeId);
+        }
+        const rows = await this.getBudgetRowsByPlanId(plan_id);
+        const rowIdMap = new Map<number, number>();
+        for (const row of rows) {
+            const newRowId = await this.addBudgetRow(newPlanId, row.account_code);
+            if (row.row_id != null) rowIdMap.set(row.row_id, newRowId);
+        }
+        const rowAmounts = await this.getBudgetRowAmountsByPlanId(plan_id);
+        for (const ra of rowAmounts) {
+            const newRowId = rowIdMap.get(ra.row_id);
+            const newIncomeId = incomeIdMap.get(ra.income_id);
+            if (newRowId != null && newIncomeId != null) {
+                await this.setBudgetRowAmount(newRowId, newIncomeId, ra.amount);
+            }
+        }
+        return newPlanId;
+    }
+
+    //--------------------------------------------------------------------------------
+    // Budget - Incomes
+    //--------------------------------------------------------------------------------
+
+    async addBudgetIncome(plan_id: number, name: string | null, amount: number, interval_type: string, interval_count: number): Promise<number> {
+        const nameVal = name != null ? "\"" + name + "\"" : "NULL";
+        const stmt = "INSERT INTO budget_incomes (plan_id, name, amount, interval_type, interval_count) VALUES (" + plan_id + ", " + nameVal + ", " + amount + ", \"" + interval_type + "\", " + interval_count + ");";
+        const incomeId = await new Promise<number>((resolve, reject) => {
+            this.db.run(stmt, function (err) {
+                if (err) reject(err);
+                else resolve(this.lastID);
+            });
+        });
+        const rows = await this.getBudgetRowsByPlanId(plan_id);
+        for (const row of rows) {
+            await new Promise<void>((resolve, reject) => {
+                this.db.run("INSERT INTO budget_row_amounts (row_id, income_id, amount) VALUES (" + row.row_id + ", " + incomeId + ", 0)", err => err ? reject(err) : resolve());
+            });
+        }
+        return incomeId;
+    }
+
+    async getBudgetIncomesByPlanId(plan_id: number): Promise<BudgetIncome[]> {
+        const results: any = [];
+        await new Promise<void>((resolve, reject) => {
+            this.db.all(this.selectBudgetIncomesByPlanId, [plan_id], (err, rows) => {
+                if (err) reject(err);
+                else { results.push(...(rows || [])); resolve(); }
+            });
+        });
+        return results;
+    }
+
+    async updateBudgetIncome(income_id: number, name: string | null, amount: number, interval_type: string, interval_count: number): Promise<void> {
+        const nameVal = name != null ? "\"" + name + "\"" : "NULL";
+        const stmt = "UPDATE budget_incomes SET name = " + nameVal + ", amount = " + amount + ", interval_type = \"" + interval_type + "\", interval_count = " + interval_count + " WHERE income_id = " + income_id;
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(stmt, err => err ? reject(err) : resolve());
+        });
+    }
+
+    async deleteBudgetIncome(income_id: number): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
+            this.db.run("DELETE FROM budget_row_amounts WHERE income_id = " + income_id, err => err ? reject(err) : resolve());
+        });
+        await new Promise<void>((resolve, reject) => {
+            this.db.run("DELETE FROM budget_incomes WHERE income_id = " + income_id, err => err ? reject(err) : resolve());
+        });
+    }
+
+    //--------------------------------------------------------------------------------
+    // Budget - Rows
+    //--------------------------------------------------------------------------------
+
+    async addBudgetRow(plan_id: number, account_code: number): Promise<number> {
+        const isAsset = await this.validateAccountIsAsset(account_code);
+        if (!isAsset) {
+            throw new Error("Account must be of type Asset to be used in a budget row.");
+        }
+        const existingRows = await this.getBudgetRowsByPlanId(plan_id);
+        if (existingRows.some((r) => r.account_code === account_code)) {
+            throw new Error("This account is already in the plan.");
+        }
+        const stmt = "INSERT INTO budget_rows (plan_id, account_code) VALUES (" + plan_id + ", " + account_code + ");";
+        const rowId = await new Promise<number>((resolve, reject) => {
+            this.db.run(stmt, function (err) {
+                if (err) reject(err);
+                else resolve(this.lastID);
+            });
+        });
+        const incomes = await this.getBudgetIncomesByPlanId(plan_id);
+        for (const inc of incomes) {
+            await new Promise<void>((resolve, reject) => {
+                this.db.run("INSERT INTO budget_row_amounts (row_id, income_id, amount) VALUES (" + rowId + ", " + inc.income_id + ", 0)", err => err ? reject(err) : resolve());
+            });
+        }
+        return rowId;
+    }
+
+    async getBudgetRowsByPlanId(plan_id: number): Promise<BudgetRow[]> {
+        const results: any = [];
+        await new Promise<void>((resolve, reject) => {
+            this.db.all(this.selectBudgetRowsByPlanId, [plan_id], (err, rows) => {
+                if (err) reject(err);
+                else { results.push(...(rows || [])); resolve(); }
+            });
+        });
+        return results;
+    }
+
+    async deleteBudgetRow(row_id: number): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
+            this.db.run("DELETE FROM budget_row_amounts WHERE row_id = " + row_id, err => err ? reject(err) : resolve());
+        });
+        await new Promise<void>((resolve, reject) => {
+            this.db.run("DELETE FROM budget_rows WHERE row_id = " + row_id, err => err ? reject(err) : resolve());
+        });
+    }
+
+    //--------------------------------------------------------------------------------
+    // Budget - Row amounts
+    //--------------------------------------------------------------------------------
+
+    async getBudgetRowAmountsByPlanId(plan_id: number): Promise<BudgetRowAmount[]> {
+        const results: any = [];
+        await new Promise<void>((resolve, reject) => {
+            this.db.all(this.selectBudgetRowAmountsByPlanId, [plan_id], (err, rows) => {
+                if (err) reject(err);
+                else { results.push(...(rows || [])); resolve(); }
+            });
+        });
+        return results;
+    }
+
+    async setBudgetRowAmount(row_id: number, income_id: number, amount: number): Promise<void> {
+        const stmt = "INSERT OR REPLACE INTO budget_row_amounts (row_id, income_id, amount) VALUES (" + row_id + ", " + income_id + ", " + amount + ")";
+        await new Promise<void>((resolve, reject) => {
+            this.db.run(stmt, err => err ? reject(err) : resolve());
+        });
     }
 }

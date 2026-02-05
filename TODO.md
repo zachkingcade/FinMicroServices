@@ -1,8 +1,8 @@
 # TODO
 
 ## Core Features
-- [ ] Add Budget Planning Page
 - [ ] Add Context Sensitive Help Buttons
+- [ ] Settings File where defaults can be set and Ports/Ips can be set
 
 ## Infrastructure
 - [ ] Add Dockerfile for Accounts Service

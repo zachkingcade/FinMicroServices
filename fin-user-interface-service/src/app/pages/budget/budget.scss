@@ -1,0 +1,161 @@
+.budgetHeader {
+  position: relative;
+  width: calc(100vw - 20rem);
+  left: 10rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.planSelectorRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.planSelectorRow label,
+.planningPeriodRow label {
+  font-size: medium;
+}
+
+.planSelect,
+.periodSelect {
+  min-width: 12rem;
+  padding: 0.25rem 0.5rem;
+  font-size: medium;
+}
+
+.planningPeriodRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.fundBarsSection {
+  position: relative;
+  width: calc(100vw - 20rem);
+  left: 10rem;
+  margin-bottom: 1rem;
+}
+
+.sectionLabel {
+  font-size: medium;
+  margin-bottom: 0.5rem;
+}
+
+.fundBarBlock {
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-content: center;
+  align-items: center;
+}
+
+.fundBarLabel {
+  display: inline-block;
+  min-width: 10rem;
+  font-size: medium;
+}
+
+.fundBarBlockActions {
+  display: inline-flex;
+  gap: 0.25rem;
+  vertical-align: middle;
+}
+
+.fundBarContainer {
+  position: relative;
+  display: inline-block;
+  width: 20rem;
+  max-width: 100%;
+}
+
+.fundBarBg {
+  height: 1.5rem;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fundBarRemaining {
+  height: 100%;
+  background: #536d7e;
+  transition: width 0.2s ease;
+}
+
+.fundBarBlock.overBudget .fundBarRemaining {
+  background: #c62828;
+}
+
+.fundBarText {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.addIncomeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.budgetTableSection {
+  position: relative;
+  width: calc(100vw - 20rem);
+  left: 0rem;
+}
+
+.budgetTableDiv {
+  height: 38vh;
+  overflow: auto;
+}
+
+.budgetTableSection input[type="number"] {
+  width: 6rem;
+}
+
+.addRowRow {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+  position: relative;
+  left: 12em;
+  top: 1em;
+}
+
+.accountSelect {
+  min-width: 15rem;
+  padding: 0.25rem 0.5rem;
+  font-size: medium;
+}
+
+.saveStatus {
+  position: relative;
+  left: 10rem;
+  top: 2em;
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+
+  &.saved {
+    color: #2e7d32;
+  }
+
+  &.uptodate {
+    color: #757575;
+  }
+}
+
+.add:hover{
+  color: #2e7d32;
+}
+
+.multiButton {
+  display: flex;
+}

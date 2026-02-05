@@ -5,6 +5,7 @@ import { AccountTypes } from './pages/account-types/account-types';
 import { Accounts } from './pages/accounts/accounts';
 import { PendingTransactions } from './pages/pending-transactions/pending-transactions';
 import { Playbook } from './pages/playbook/playbook';
+import { Budget } from './pages/budget/budget';
 
 export const routes: Routes = [
     // redirect empty path to ledger
@@ -19,6 +20,8 @@ export const routes: Routes = [
     { path: 'pendingtransacitons', component: PendingTransactions },
 
     { path: 'playbook', component: Playbook },
+
+    { path: 'budget', component: Budget },
 
     { path: 'error', component: ErrorPage },
 

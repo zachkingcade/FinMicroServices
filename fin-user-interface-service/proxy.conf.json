@@ -1,27 +1,32 @@
-    {
-      "/type": {
-        "target": "http://localhost:3001",
-        "secure": false,
-        "changeOrigin": true
-      },
-      "/transaction": {
-        "target": "http://localhost:3002",
-        "secure": false,
-        "changeOrigin": true
-      },
-      "/playbook": {
-        "target": "http://localhost:3002",
-        "secure": false,
-        "changeOrigin": true
-      },
-      "/account": {
-        "target": "http://localhost:3001",
-        "secure": false,
-        "changeOrigin": true
-      },
-      "/logs": {
-        "target": "http://localhost:3003",
-        "secure": false,
-        "changeOrigin": true
-      }
-    }
+{
+  "/type": {
+    "target": "http://localhost:3001",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/transaction": {
+    "target": "http://localhost:3002",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/playbook": {
+    "target": "http://localhost:3002",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/account": {
+    "target": "http://localhost:3001",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/budget": {
+    "target": "http://localhost:3001",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/logs": {
+    "target": "http://localhost:3003",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

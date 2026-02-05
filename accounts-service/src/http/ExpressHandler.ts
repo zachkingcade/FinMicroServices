@@ -5,6 +5,7 @@ import { Account, AccountDTO } from '../types/Account.js'
 import { DatabaseHandler } from '../database/DatabaseHandler.js'
 import { AccountType, AccountTypeDTO } from '../types/AccountType.js'
 import { TypeClass } from '../types/TypeClass.js'
+import type { BudgetPlan, BudgetIncome, BudgetRow, BudgetRowAmount } from '../types/Budget.js'
 
 export class ExpressHandler {
 
@@ -114,6 +115,133 @@ export class ExpressHandler {
         res.status(500).json({ status: 'Account Type Update Failed', error });
       }
     })
+
+    this.app.post('/budget/plan', async (req, res) => {
+      try {
+        const { name, planning_period } = req.body;
+        this.log.info(`Recieved command: /budget/plan with data ${JSON.stringify(req.body)}`);
+        const plan_id = await this.database.addBudgetPlan(name, planning_period);
+        res.status(201).json({ status: 'Budget plan added', plan_id });
+      } catch (error) {
+        this.log.error(`Error http post: /budget/plan: [${error}]`);
+        res.status(500).json({ status: 'Budget plan add failed', error });
+      }
+    })
+
+    this.app.post('/budget/plan/update', async (req, res) => {
+      try {
+        const { plan_id, name, planning_period } = req.body;
+        this.log.info(`Recieved command: /budget/plan/update with data ${JSON.stringify(req.body)}`);
+        await this.database.updateBudgetPlan(plan_id, name, planning_period);
+        res.status(201).json({ status: 'Budget plan updated' });
+      } catch (error) {
+        this.log.error(`Error http post: /budget/plan/update: [${error}]`);
+        res.status(500).json({ status: 'Budget plan update failed', error });
+      }
+    })
+
+    this.app.post('/budget/plan/delete', async (req, res) => {
+      try {
+        const { plan_id } = req.body;
+        this.log.info(`Recieved command: /budget/plan/delete with data ${JSON.stringify(req.body)}`);
+        await this.database.deleteBudgetPlan(plan_id);
+        res.status(201).json({ status: 'Budget plan deleted' });
+      } catch (error) {
+        this.log.error(`Error http post: /budget/plan/delete: [${error}]`);
+        res.status(500).json({ status: 'Budget plan delete failed', error });
+      }
+    })
+
+    this.app.post('/budget/plan/duplicate', async (req, res) => {
+      try {
+        const { plan_id } = req.body;
+        this.log.info(`Recieved command: /budget/plan/duplicate with data ${JSON.stringify(req.body)}`);
+        const new_plan_id = await this.database.duplicateBudgetPlan(plan_id);
+        res.status(201).json({ status: 'Budget plan duplicated', plan_id: new_plan_id });
+      } catch (error) {
+        this.log.error(`Error http post: /budget/plan/duplicate: [${error}]`);
+        res.status(500).json({ status: 'Budget plan duplicate failed', error });
+      }
+    })
+
+    this.app.post('/budget/income', async (req, res) => {
+      try {
+        const { plan_id, name, amount, interval_type, interval_count } = req.body;
+        this.log.info(`Recieved command: /budget/income with data ${JSON.stringify(req.body)}`);
+        const income_id = await this.database.addBudgetIncome(plan_id, name ?? null, amount, interval_type, interval_count);
+        res.status(201).json({ status: 'Budget income added', income_id });
+      } catch (error) {
+        this.log.error(`Error http post: /budget/income: [${error}]`);
+        res.status(500).json({ status: 'Budget income add failed', error });
+      }
+    })
+
+    this.app.post('/budget/income/update', async (req, res) => {
+      try {
+        const { income_id, name, amount, interval_type, interval_count } = req.body;
+        this.log.info(`Recieved command: /budget/income/update with data ${JSON.stringify(req.body)}`);
+        await this.database.updateBudgetIncome(income_id, name ?? null, amount, interval_type, interval_count);
+        res.status(201).json({ status: 'Budget income updated' });
+      } catch (error) {
+        this.log.error(`Error http post: /budget/income/update: [${error}]`);
+        res.status(500).json({ status: 'Budget income update failed', error });
+      }
+    })
+
+    this.app.post('/budget/income/delete', async (req, res) => {
+      try {
+        const { income_id } = req.body;
+        this.log.info(`Recieved command: /budget/income/delete with data ${JSON.stringify(req.body)}`);
+        await this.database.deleteBudgetIncome(income_id);
+        res.status(201).json({ status: 'Budget income deleted' });
+      } catch (error) {
+        this.log.error(`Error http post: /budget/income/delete: [${error}]`);
+        res.status(500).json({ status: 'Budget income delete failed', error });
+      }
+    })
+
+    this.app.post('/budget/row', async (req, res) => {
+      try {
+        const { plan_id, account_code } = req.body;
+        this.log.info(`Recieved command: /budget/row with data ${JSON.stringify(req.body)}`);
+        const row_id = await this.database.addBudgetRow(plan_id, account_code);
+        res.status(201).json({ status: 'Budget row added', row_id });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.log.error(`Error http post: /budget/row: [${error}]`);
+        if (message === 'This account is already in the plan.') {
+          res.status(400).json({ error: message });
+        } else {
+          res.status(500).json({ status: 'Budget row add failed', error: message });
+        }
+      }
+    })
+
+    this.app.post('/budget/row/delete', async (req, res) => {
+      try {
+        const { row_id } = req.body;
+        this.log.info(`Recieved command: /budget/row/delete with data ${JSON.stringify(req.body)}`);
+        await this.database.deleteBudgetRow(row_id);
+        res.status(201).json({ status: 'Budget row deleted' });
+      } catch (error) {
+        this.log.error(`Error http post: /budget/row/delete: [${error}]`);
+        res.status(500).json({ status: 'Budget row delete failed', error });
+      }
+    })
+
+    this.app.post('/budget/row/amounts', async (req, res) => {
+      try {
+        const { row_id, amounts } = req.body as { row_id: number; amounts: { income_id: number; amount: number }[] };
+        this.log.info(`Recieved command: /budget/row/amounts with row_id ${row_id}`);
+        for (const { income_id, amount } of amounts) {
+          await this.database.setBudgetRowAmount(row_id, income_id, amount);
+        }
+        res.status(201).json({ status: 'Budget row amounts updated' });
+      } catch (error) {
+        this.log.error(`Error http post: /budget/row/amounts: [${error}]`);
+        res.status(500).json({ status: 'Budget row amounts update failed', error });
+      }
+    })
   }
 
 
@@ -203,5 +331,34 @@ export class ExpressHandler {
       }
     }
     )
+
+    this.app.get('/budget/plans', async (req, res) => {
+      try {
+        const results: BudgetPlan[] = await this.database.getAllBudgetPlans();
+        res.json(results);
+      } catch (error) {
+        this.log.error(`Error http get: /budget/plans: [${error}]`);
+        res.status(500).json({ status: 'Budget plans get failed', error });
+      }
+    })
+
+    this.app.get('/budget/plan/:id', async (req, res) => {
+      try {
+        const plan_id = Number(req.params.id);
+        this.log.info(`Recieved command: /budget/plan/:id with id ${plan_id}`);
+        const plan = await this.database.getBudgetPlanById(plan_id);
+        if (!plan) {
+          res.status(404).json({ status: 'Budget plan not found', plan_id });
+          return;
+        }
+        const incomes: BudgetIncome[] = await this.database.getBudgetIncomesByPlanId(plan_id);
+        const rows: BudgetRow[] = await this.database.getBudgetRowsByPlanId(plan_id);
+        const rowAmounts: BudgetRowAmount[] = await this.database.getBudgetRowAmountsByPlanId(plan_id);
+        res.json({ plan, incomes, rows, rowAmounts });
+      } catch (error) {
+        this.log.error(`Error http get: /budget/plan/:id: [${error}]`);
+        res.status(500).json({ status: 'Budget plan get failed', error });
+      }
+    })
   }
 }

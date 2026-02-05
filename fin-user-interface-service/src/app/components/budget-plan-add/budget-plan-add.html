@@ -1,0 +1,22 @@
+<div class="modalBody">
+    <h2 mat-dialog-title>New Budget Plan</h2>
+    <div mat-dialog-content>
+        <div class="flexInput">
+            <p class="flexInputLabel">Name:</p>
+            <input class="flexInputInput" type="text" [(ngModel)]="name" #nameInput placeholder="Plan name">
+        </div>
+        <div class="flexInput">
+            <p class="flexInputLabel">Planning period:</p>
+            <select class="flexInputInput" [(ngModel)]="planning_period">
+                <option value="weekly">Weekly</option>
+                <option value="bi-weekly">Bi-weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+            </select>
+        </div>
+    </div>
+    <div mat-dialog-actions align="end">
+        <button class="modalButtons" mat-button (click)="cancel()">Cancel</button>
+        <button class="modalButtons" mat-raised-button color="primary" (click)="confirm()">Add</button>
+    </div>
+</div>

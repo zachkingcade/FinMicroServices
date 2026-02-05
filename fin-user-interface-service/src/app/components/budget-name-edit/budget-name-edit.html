@@ -1,0 +1,13 @@
+<div class="modalBody">
+  <h2 mat-dialog-title>{{ data.title }}</h2>
+  <div mat-dialog-content>
+    <div class="flexInput">
+      <p class="flexInputLabel">Name:</p>
+      <input id="nameInput" class="flexInputInput" type="text" #nameInput>
+    </div>
+  </div>
+  <div mat-dialog-actions align="end">
+    <button class="modalButtons" mat-button (click)="cancel()">Cancel</button>
+    <button class="modalButtons" mat-raised-button color="primary" (click)="confirm()">Confirm</button>
+  </div>
+</div>

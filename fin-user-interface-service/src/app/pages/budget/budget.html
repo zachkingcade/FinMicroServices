@@ -1,0 +1,128 @@
+<app-nav-bar></app-nav-bar>
+
+<div class="budgetHeader">
+  <div class="planSelectorRow">
+    <label>Budget plan:</label>
+    <select [(ngModel)]="selectedPlanId" (ngModelChange)="onPlanSelectionChange($event)" class="planSelect">
+      <option [ngValue]="null">-- Select --</option>
+      @for (p of plans; track p.plan_id) {
+        <option [ngValue]="p.plan_id">{{ p.name }}</option>
+      }
+    </select>
+    <button type="button" class="actionButtons add" (click)="openAddPlan()" title="New plan">
+      <i-feather name="plus"></i-feather>
+    </button>
+    @if (plan) {
+      <button type="button" class="actionButtons edit" (click)="openEditPlanName()" title="Edit plan name">
+        <i-feather name="edit"></i-feather>
+      </button>
+      <button type="button" class="actionButtons edit" (click)="duplicatePlan()" title="Duplicate plan">
+        <i-feather name="copy"></i-feather>
+      </button>
+      <button type="button" class="actionButtons trash" (click)="deletePlan()" title="Delete plan">
+        <i-feather name="trash-2"></i-feather>
+      </button>
+    }
+  </div>
+
+  @if (plan) {
+  <div class="planningPeriodRow">
+    <label>Planning period:</label>
+    <select [(ngModel)]="plan.planning_period" (change)="updatePlanningPeriod()" class="periodSelect">
+      @for (opt of planningPeriodOptions; track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+  </div>
+  }
+</div>
+
+@if (plan && incomes.length) {
+<div class="fundBarsSection">
+  <p class="sectionLabel">Income sources</p>
+  @for (inc of incomes; track inc.income_id) {
+  <div class="fundBarBlock" [class.overBudget]="remainingForIncome(inc) < 0">
+    <span class="fundBarLabel">{{ inc.name || 'Income ' + inc.income_id }}</span>
+    <div class="fundBarBlockActions">
+      <button type="button" class="actionButtons edit" (click)="openEditIncomeName(inc)" title="Edit income name">
+        <i-feather name="edit"></i-feather>
+      </button>
+      <button type="button" class="actionButtons trash" (click)="deleteIncome(inc)" title="Delete income source">
+        <i-feather name="trash-2"></i-feather>
+      </button>
+    </div>
+    <div class="fundBarContainer">
+      <div class="fundBarBg">
+        @let total = contribution(inc);
+        @let remaining = remainingForIncome(inc);
+        @let pct = total > 0 ? (remaining < 0 ? 100 : (remaining / total) * 100) : 0;
+        <div class="fundBarRemaining" [style.width.%]="pct"></div>
+      </div>
+      <span class="fundBarText">{{ remaining | number:'1.2-2' }} / {{ contribution(inc) | number:'1.2-2' }}</span>
+    </div>
+  </div>
+  }
+  <button type="button" class="addIncomeBtn" (click)="openAddIncome()">
+    <i-feather name="plus"></i-feather> Add income source
+  </button>
+</div>
+}
+
+@if (plan && incomes.length === 0) {
+<div class="fundBarsSection">
+  <button type="button" class="addIncomeBtn" (click)="openAddIncome()">
+    <i-feather name="plus"></i-feather> Add income source
+  </button>
+</div>
+}
+
+<div class="addRowRow">
+  <select [(ngModel)]="newRowAccountCode" class="accountSelect">
+    <option [ngValue]="null">-- Select account --</option>
+    @for (a of assetAccounts; track a.account_code) {
+      <option [ngValue]="a.account_code">{{ a.account_selectable }}</option>
+    }
+  </select>
+  <button type="button" (click)="addRow()">Add row</button>
+</div>
+
+@if (plan) {
+<div class="budgetTableSection">
+  <div class="pageDataDisplayTableDiv budgetTableDiv">
+    <table>
+      <thead>
+        <tr>
+          <th>Account</th>
+          @for (inc of incomes; track inc.income_id) {
+            <th class="amountHeaderCell">{{ inc.name || 'Income ' + inc.income_id }}</th>
+          }
+          <th class="amountHeaderCell">Total</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows; track row.row_id) {
+        <tr>
+          <td class="columnSimpleOneLine">{{ getAccountLabel(row.account_code) }}</td>
+          @for (inc of incomes; track inc.income_id) {
+            <td class="amountCells">
+              <input type="number" step="0.01" min="0" [value]="getAmount(row.row_id!, inc.income_id!)"
+                (input)="setAmount(row.row_id!, inc.income_id!, +$any($event.target).value || 0)"
+                (blur)="saveRowAmounts(row.row_id!)">
+            </td>
+          }
+          <td class="amountCells columnSimpleOneLine">{{ rowTotal(row.row_id!) | number:'1.2-2' }}</td>
+          <td class="multiButton">
+            <button type="button" class="actionButtons trash" (click)="removeRow(row.row_id!)" title="Remove row">
+              <i-feather name="trash-2"></i-feather>
+            </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p class="saveStatus" [class.saved]="saveStatusClass === 'saved'" [class.uptodate]="saveStatusClass === 'uptodate'">{{ saveStatusMessage }}</p>
+</div>
+}

@@ -1,0 +1,26 @@
+<div class="modalBody">
+    <h2 mat-dialog-title>New Income Source</h2>
+    <div mat-dialog-content>
+        <div class="flexInput">
+            <p class="flexInputLabel">Name (optional):</p>
+            <input class="flexInputInput" type="text" [(ngModel)]="name" placeholder="e.g. Paycheck">
+        </div>
+        <div class="flexInput">
+            <p class="flexInputLabel">Amount per occurrence:</p>
+            <input class="flexInputInput" type="number" step="0.01" [(ngModel)]="amount" placeholder="0">
+        </div>
+        <div class="flexInput">
+            <p class="flexInputLabel">Every</p>
+            <input class="flexInputInput" type="number" min="1" [(ngModel)]="interval_count" placeholder="1" style="width: 5rem;">
+            <select class="flexInputInput" [(ngModel)]="interval_type" style="width: 8rem;">
+                <option value="days">day(s)</option>
+                <option value="weeks">week(s)</option>
+                <option value="months">month(s)</option>
+            </select>
+        </div>
+    </div>
+    <div mat-dialog-actions align="end">
+        <button class="modalButtons" mat-button (click)="cancel()">Cancel</button>
+        <button class="modalButtons" mat-raised-button color="primary" (click)="confirm()">Add</button>
+    </div>
+</div>
