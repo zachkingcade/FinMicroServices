@@ -7,6 +7,10 @@ async function main() {
     let log = WLog.getLogger();
     log.info("Logger instance obtained");
     log.info("Starting....");
+
+    let express = await ExpressHandler.getInstance();
+    log.info("Express Handler started");
+
     let headerString: string = "";
     headerString += "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
     headerString += " .d8b.   .o88b.  .o88b.  .d88b.  db    db d8b   db d888888b      .d8888. d88888b d8888b. db    db d888888b  .o88b. d88888b\n"
@@ -15,14 +19,8 @@ async function main() {
     headerString += "88~~~88 8b      8b      88    88 88    88 88 V8o88    88           `Y8b. 88~~~~~ 88`8b   `8b  d8'    88    8b      88~~~~~\n"
     headerString += "88   88 Y8b  d8 Y8b  d8 `8b  d8' 88b  d88 88  V888    88         db   8D 88.     88 `88.  `8bd8'    .88.   Y8b  d8 88.    \n"
     headerString += "YP   YP  `Y88P'  `Y88P'  `Y88P'  ~Y8888P' VP   V8P    YP         `8888Y' Y88888P 88   YD    YP    Y888888P  `Y88P' Y88888P\n"
-    headerString += "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n\n"
+    headerString += "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     log.info(headerString);
-
-    let express = await ExpressHandler.getInstance();
-    log.info("Express Handler started");
-
-    // await queue.setupAccountQueue();
-    // log.info("Accounts-Queue setup within the RabbitMQ Handler");
 
     const startupTimeMs = (performance.now() - startupStartTime).toFixed(2);
     console.log(`Accounts Service started in ${startupTimeMs} milliseconds...`);

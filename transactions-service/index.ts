@@ -8,8 +8,11 @@ async function main() {
     let log = WLog.getLogger();
     log.info("Logger instance obtained");
     log.info("Starting....");
-    let headerString: string = "";
 
+    let express = await ExpressHandler.getInstance();
+    log.info("Express Handler started");
+
+    let headerString: string = "";
     headerString += "\n\n88888888888                                                 888    d8b                 \n"
     headerString += "   888                                                      888    Y8P                   \n"
     headerString += "   888                                                      888                          \n"
@@ -25,11 +28,8 @@ async function main() {
     headerString += "     Y88b. d8P  Y8b 888P    888  888 888 d88P    d8P  Y8b                                 \n"
     headerString += "       888 88888888 888     Y88  88P 888 888     88888888                                 \n"
     headerString += "Y88b  d88P Y8b.     888      Y8bd8P  888 Y88b.   Y8b.                                     \n"
-    headerString += "  Y8888P     Y8888  888       Y88P   888   Y8888P  Y8888  \n\n"
+    headerString += "  Y8888P     Y8888  888       Y88P   888   Y8888P  Y8888  "
     log.info(headerString);
-
-    let express = await ExpressHandler.getInstance();
-    log.info("Express Handler started");
 
     const startupTimeMs = (performance.now() - startupStartTime).toFixed(2);
     console.log(`Transaction Service started in ${startupTimeMs} milliseconds...`);
