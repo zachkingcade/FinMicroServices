@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PendingTransaction, Transaction, TransactionAddReturn, TransactionDTO, UpdateTransactionNotesDTO } from '../types/Transaction';
+import { PendingTransaction, Playbook, PlaybookEntry, PlaybookWithEntries, PlaybookWithEntryCount, Transaction, TransactionAddReturn, TransactionDTO, UpdateTransactionNotesDTO } from '../types/Transaction';
 import { Campfire } from './campfire';
 
 @Injectable({
@@ -31,6 +31,16 @@ export class TransactionData {
   getCurrentAccountBalance(accountNumber: number): Observable<number> {
     this.campfire.debug(`Transactions Service Executing HTTP GET /transaction/analysis/currentbalanceofaccount/${accountNumber}`);
     return this.http.get<number>(`/transaction/analysis/currentbalanceofaccount/${accountNumber}`);
+  }
+
+  getAllPlaybooks(): Observable<PlaybookWithEntryCount[]> {
+    this.campfire.debug("Transactions Service Executing HTTP GET /playbook/getall");
+    return this.http.get<PlaybookWithEntryCount[]>("/playbook/getall");
+  }
+
+  getPlaybookWithEntries(id: number): Observable<PlaybookWithEntries> {
+    this.campfire.debug(`Transactions Service Executing HTTP GET /playbook/get/${id}`);
+    return this.http.get<PlaybookWithEntries>(`/playbook/get/${id}`);
   }
 
   //--------------------------------------------------------------------------------
@@ -67,5 +77,38 @@ export class TransactionData {
     return this.http.post<TransactionAddReturn>("/transaction/updateNotes", transactionNotesEditDTO);
   }
 
-  
+  addPlaybook(name: string): Observable<{ status: string }> {
+    this.campfire.debug("Transactions Service Executing HTTP POST /playbook/add", { name });
+    return this.http.post<{ status: string }>("/playbook/add", { name });
+  }
+
+  updatePlaybookName(playbook_id: number, name: string): Observable<{ status: string }> {
+    this.campfire.debug("Transactions Service Executing HTTP POST /playbook/updateName", { playbook_id, name });
+    return this.http.post<{ status: string }>("/playbook/updateName", { playbook_id, name });
+  }
+
+  removePlaybook(playbook_id: number): Observable<{ status: string }> {
+    this.campfire.debug("Transactions Service Executing HTTP POST /playbook/remove", { playbook_id });
+    return this.http.post<{ status: string }>("/playbook/remove", { playbook_id });
+  }
+
+  addPlaybookEntry(entry: PlaybookEntry): Observable<{ status: string }> {
+    this.campfire.debug("Transactions Service Executing HTTP POST /playbook/entry/add", entry);
+    return this.http.post<{ status: string }>("/playbook/entry/add", entry);
+  }
+
+  updatePlaybookEntry(entry: PlaybookEntry & { entry_id: number }): Observable<{ status: string }> {
+    this.campfire.debug("Transactions Service Executing HTTP POST /playbook/entry/update", entry);
+    return this.http.post<{ status: string }>("/playbook/entry/update", entry);
+  }
+
+  removePlaybookEntry(entry_id: number): Observable<{ status: string }> {
+    this.campfire.debug("Transactions Service Executing HTTP POST /playbook/entry/remove", { entry_id });
+    return this.http.post<{ status: string }>("/playbook/entry/remove", { entry_id });
+  }
+
+  replayPlaybook(playbook_id: number, trans_date: string): Observable<{ status: string; count: number }> {
+    this.campfire.debug("Transactions Service Executing HTTP POST /playbook/replay", { playbook_id, trans_date });
+    return this.http.post<{ status: string; count: number }>("/playbook/replay", { playbook_id, trans_date });
+  }
 }

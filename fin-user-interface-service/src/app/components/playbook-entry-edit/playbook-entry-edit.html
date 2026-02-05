@@ -1,0 +1,51 @@
+<div class="modalBody">
+    <h2 mat-dialog-title>Edit Playbook Entry</h2>
+
+    <div mat-dialog-content>
+        <div class="flexInput">
+            <p class="flexInputLabel">Description:</p>
+            <input class="flexInputInput" type="text" [(ngModel)]="description">
+        </div>
+        <div class="flexInput">
+            <p class="flexInputLabel">Amount:</p>
+            <input class="flexInputInput" type="number" step="0.01" [(ngModel)]="amount">
+        </div>
+        <div class="flexInput">
+            <p class="flexInputLabel">Credit Account:</p>
+            <mtx-select placeholder="Select Credit" [(ngModel)]="credit_account">
+                @for (item of data.accountsListSelectable; track item.account_code) {
+                    <mtx-option [value]="item.account_code">{{ item.account_selectable }}</mtx-option>
+                }
+            </mtx-select>
+            @if (credit_account && determineEffect(credit_account, 'credit') === '+') {
+                <p class="effectText positiveEffect">Increase ^</p>
+            }
+            @if (credit_account && determineEffect(credit_account, 'credit') === '-') {
+                <p class="effectText negativeEffect">Decrease v</p>
+            }
+        </div>
+        <div class="flexInput">
+            <p class="flexInputLabel">Debit Account:</p>
+            <mtx-select placeholder="Select Debit" [(ngModel)]="debit_account">
+                @for (item of data.accountsListSelectable; track item.account_code) {
+                    <mtx-option [value]="item.account_code">{{ item.account_selectable }}</mtx-option>
+                }
+            </mtx-select>
+            @if (debit_account && determineEffect(debit_account, 'debit') === '+') {
+                <p class="effectText positiveEffect">Increase ^</p>
+            }
+            @if (debit_account && determineEffect(debit_account, 'debit') === '-') {
+                <p class="effectText negativeEffect">Decrease v</p>
+            }
+        </div>
+        <div class="flexInput">
+            <p class="flexInputLabel">Notes:</p>
+            <input class="flexInputInput" type="text" [(ngModel)]="notes">
+        </div>
+    </div>
+
+    <div mat-dialog-actions align="end">
+        <button class="modalButtons" mat-button (click)="cancel()">Cancel</button>
+        <button class="modalButtons" mat-raised-button color="primary" (click)="confirm()">Confirm</button>
+    </div>
+</div>

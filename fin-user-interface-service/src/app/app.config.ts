@@ -4,12 +4,12 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 
 import { FeatherModule } from 'angular-feather';
-import { BookOpen, Columns, Edit, File, Inbox, Package, PenTool, Slash, Trash2, Filter } from 'angular-feather/icons';
+import { BookOpen, Columns, Edit, File, Inbox, Package, PenTool, Play, Repeat, Slash, Trash2, Filter } from 'angular-feather/icons';
 import { provideHttpClient } from '@angular/common/http';
 import { provideToastr } from 'ngx-toastr';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
-const icons = { BookOpen, Package, PenTool, Inbox, File, Trash2, Columns, Edit, Slash, Filter};
+const icons = { BookOpen, Package, PenTool, Inbox, File, Trash2, Columns, Edit, Slash, Filter, Play, Repeat };
 
 export const appConfig: ApplicationConfig = {
   providers: [

@@ -1,0 +1,144 @@
+<!-- Navigation Bar -->
+<app-nav-bar></app-nav-bar>
+
+<!-- Table that displays playbooks -->
+<div class="pageDataDisplayTableDiv playbooksTableDiv">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th># Entries</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (playbook of playbooksList; track playbook.playbook_id) {
+            <tr (click)="selectPlaybook(playbook)" [class.selected]="selectedPlaybookId === playbook.playbook_id">
+                <td class="columnSimpleOneLine">{{ playbook.name }}</td>
+                <td class="columnSimpleOneLine">{{ playbook.entry_count }}</td>
+                <td class="multiButton">
+                    <button class="actionButtons edit" (click)="openReplayModal(playbook, $event)" title="Replay">
+                        <i-feather name="play"></i-feather>
+                    </button>
+                    <button class="actionButtons edit" (click)="openEditNameModal(playbook, $event)" title="Edit name">
+                        <i-feather name="edit"></i-feather>
+                    </button>
+                    <button class="actionButtons trash" (click)="confirmDeletePlaybook(playbook, $event)" title="Delete">
+                        <i-feather name="trash-2"></i-feather>
+                    </button>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Add playbook -->
+<div class="manualInput">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Done?</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="text" id="newPlaybookName" #newPlaybookNameInput placeholder="New playbook name"></td>
+                <td><button type="button" (click)="submitNewPlaybook()">Submit</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@if (selectedPlaybookId !== null) {
+<div class="selectedPlaybookSection">
+    <div class="entriesSectionHeader">
+        <h3>Entries for: {{ selectedPlaybookName }} <button type="button" class="linkButton" (click)="clearSelection()">(clear selection)</button></h3>
+    </div>
+
+    <div class="pageDataDisplayTableDiv entriesTableDiv">
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="amountHeaderCell">Amount</th>
+                    <th>Credit</th>
+                    <th>Debit</th>
+                    <th>Notes</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (entry of selectedPlaybookEntries; track entry.entry_id) {
+                <tr>
+                    <td class="columnSimpleOneLine">{{ entry.trans_description }}</td>
+                    <td class="amountCells columnSimpleOneLine">{{ (entry.amount).toFixed(2) }}</td>
+                    <td class="columnSimpleOneLine">{{ getAccountSelectable(entry.credit_account) }}</td>
+                    <td class="columnSimpleOneLine">{{ getAccountSelectable(entry.debit_account) }}</td>
+                    <td class="columnTakeExtraSpace">{{ entry.notes ? entry.notes : "-" }}</td>
+                    <td class="multiButton">
+                        <button class="actionButtons edit" (click)="openEditEntryModal(entry, $event)" title="Edit">
+                            <i-feather name="edit"></i-feather>
+                        </button>
+                        <button class="actionButtons trash" (click)="confirmDeleteEntry(entry, $event)" title="Delete">
+                            <i-feather name="trash-2"></i-feather>
+                        </button>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add entry -->
+    <div class="manualInput" id="entriesManualInput">
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="amountHeaderCell">Amount</th>
+                    <th>Credit</th>
+                    <th>Debit</th>
+                    <th>Notes</th>
+                    <th>Done?</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" #newEntryDescription placeholder="Description"></td>
+                    <td class="amountCells"><input type="number" step="0.01" #newEntryAmount placeholder="Amount"></td>
+                    <td class="selector">
+                        <mtx-select placeholder="Select Credit" [(ngModel)]="newEntryCreditValue">
+                            @for (item of accountsListSelectable; track item.account_code) {
+                                <mtx-option [value]="item.account_code">{{ item.account_selectable }}</mtx-option>
+                            }
+                        </mtx-select>
+                        @if (newEntryCreditValue && determineEffect(newEntryCreditValue, 'credit') === '+') {
+                            <p class="effectText positiveEffect">Increase ^</p>
+                        }
+                        @if (newEntryCreditValue && determineEffect(newEntryCreditValue, 'credit') === '-') {
+                            <p class="effectText negativeEffect">Decrease v</p>
+                        }
+                    </td>
+                    <td class="selector">
+                        <mtx-select placeholder="Select Debit" [(ngModel)]="newEntryDebitValue">
+                            @for (item of accountsListSelectable; track item.account_code) {
+                                <mtx-option [value]="item.account_code">{{ item.account_selectable }}</mtx-option>
+                            }
+                        </mtx-select>
+                        @if (newEntryDebitValue && determineEffect(newEntryDebitValue, 'debit') === '+') {
+                            <p class="effectText positiveEffect">Increase ^</p>
+                        }
+                        @if (newEntryDebitValue && determineEffect(newEntryDebitValue, 'debit') === '-') {
+                            <p class="effectText negativeEffect">Decrease v</p>
+                        }
+                    </td>
+                    <td><input type="text" #newEntryNotes placeholder="Notes"></td>
+                    <td><button type="button" (click)="submitNewEntry()">Submit</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+}

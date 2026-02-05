@@ -1,0 +1,16 @@
+<div class="modalBody">
+    <h2 mat-dialog-title>Replay Playbook</h2>
+
+    <div mat-dialog-content>
+        <p>Choose the date to use for all replayed transactions.</p>
+        <div class="flexInput">
+            <p class="flexInputLabel">Date:</p>
+            <input class="flexInputInput" type="date" [(ngModel)]="trans_date">
+        </div>
+    </div>
+
+    <div mat-dialog-actions align="end">
+        <button class="modalButtons" mat-button (click)="cancel()">Cancel</button>
+        <button class="modalButtons" mat-raised-button color="primary" (click)="confirm()">Replay</button>
+    </div>
+</div>

@@ -1,7 +1,6 @@
 # TODO
 
 ## Core Features
-- [ ] Add Playbook Page
 - [ ] Add Budget Planning Page
 - [ ] Add Context Sensitive Help Buttons
 

@@ -3,7 +3,7 @@ import { WLog } from '../WLog.js'
 import { Logger } from 'winston'
 import { Account, AccountDTO } from '../types/Account.js'
 import { DatabaseHandler } from '../database/DatabaseHandler.js'
-import { PendingTransaction, Transaction, UpdateTransactionNotesDTO } from '../types/Transaction.js'
+import { PendingTransaction, Playbook, PlaybookEntry, PlaybookWithEntryCount, Transaction, UpdateTransactionNotesDTO } from '../types/Transaction.js'
 import { error } from 'console'
 import { AccountService } from './AccountService.js'
 import { TypeClass } from '../types/TypeClass.js'
@@ -163,6 +163,90 @@ export class ExpressHandler {
         res.status(500).json({ status: 'Transactions notes edit Failed', error });
       }
     })
+
+    this.app.post('/playbook/add', async (req, res) => {
+      try {
+        let body: { name: string } = req.body;
+        this.log.info(`Recieved command: /playbook/add with data ${JSON.stringify(body)}`);
+        await this.database.addPlaybook(body.name);
+        res.status(201).json({ status: 'Playbook Added', name: body.name })
+      } catch (error) {
+        this.log.error(`Error http post: /playbook/add, unable to add playbook: ${error}`);
+        res.status(500).json({ status: 'Playbook Add Failed', error });
+      }
+    })
+
+    this.app.post('/playbook/updateName', async (req, res) => {
+      try {
+        let body: { playbook_id: number, name: string } = req.body;
+        this.log.info(`Recieved command: /playbook/updateName with data ${JSON.stringify(body)}`);
+        await this.database.updatePlaybookName(body.playbook_id, body.name);
+        res.status(201).json({ status: 'Playbook Name Updated', body })
+      } catch (error) {
+        this.log.error(`Error http post: /playbook/updateName, unable to update playbook name: ${error}`);
+        res.status(500).json({ status: 'Playbook Update Name Failed', error });
+      }
+    })
+
+    this.app.post('/playbook/remove', async (req, res) => {
+      try {
+        let body: { playbook_id: number } = req.body;
+        this.log.info(`Recieved command: /playbook/remove with data ${JSON.stringify(body)}`);
+        await this.database.removePlaybook(body.playbook_id);
+        res.status(201).json({ status: 'Playbook removed', body })
+      } catch (error) {
+        this.log.error(`Error http post: /playbook/remove, unable to remove playbook: ${error}`);
+        res.status(500).json({ status: 'Playbook remove Failed', error });
+      }
+    })
+
+    this.app.post('/playbook/entry/add', async (req, res) => {
+      try {
+        let entry: PlaybookEntry = req.body;
+        this.log.info(`Recieved command: /playbook/entry/add with data ${JSON.stringify(entry)}`);
+        await this.database.addPlaybookEntry(entry.playbook_id, entry.trans_description, entry.amount, entry.credit_account, entry.debit_account, entry.notes, entry.sort_order);
+        res.status(201).json({ status: 'Playbook Entry Added', entry })
+      } catch (error) {
+        this.log.error(`Error http post: /playbook/entry/add, unable to add playbook entry: ${error}`);
+        res.status(500).json({ status: 'Playbook Entry Add Failed', error });
+      }
+    })
+
+    this.app.post('/playbook/entry/update', async (req, res) => {
+      try {
+        let entry: PlaybookEntry & { entry_id: number } = req.body;
+        this.log.info(`Recieved command: /playbook/entry/update with data ${JSON.stringify(entry)}`);
+        await this.database.updatePlaybookEntry(entry.entry_id, entry.trans_description, entry.amount, entry.credit_account, entry.debit_account, entry.notes);
+        res.status(201).json({ status: 'Playbook Entry Updated', entry })
+      } catch (error) {
+        this.log.error(`Error http post: /playbook/entry/update, unable to update playbook entry: ${error}`);
+        res.status(500).json({ status: 'Playbook Entry Update Failed', error });
+      }
+    })
+
+    this.app.post('/playbook/entry/remove', async (req, res) => {
+      try {
+        let body: { entry_id: number } = req.body;
+        this.log.info(`Recieved command: /playbook/entry/remove with data ${JSON.stringify(body)}`);
+        await this.database.removePlaybookEntry(body.entry_id);
+        res.status(201).json({ status: 'Playbook Entry removed', body })
+      } catch (error) {
+        this.log.error(`Error http post: /playbook/entry/remove, unable to remove playbook entry: ${error}`);
+        res.status(500).json({ status: 'Playbook Entry remove Failed', error });
+      }
+    })
+
+    this.app.post('/playbook/replay', async (req, res) => {
+      try {
+        let body: { playbook_id: number, trans_date: string } = req.body;
+        this.log.info(`Recieved command: /playbook/replay with data ${JSON.stringify(body)}`);
+        let count = await this.database.replayPlaybook(body.playbook_id, body.trans_date);
+        res.status(201).json({ status: `Playbook replayed. [${count}] transactions created.`, count })
+      } catch (error) {
+        this.log.error(`Error http post: /playbook/replay, unable to replay playbook: ${error}`);
+        res.status(500).json({ status: 'Playbook replay Failed', error });
+      }
+    })
   }
 
   //--------------------------------------------------------------------------------
@@ -199,6 +283,33 @@ export class ExpressHandler {
       } catch (error) {
         this.log.error(`Error http get: /transaction/getbyaccount, unable to get all transactions with account [${req.params.accountCode}]: ${error}`);
         res.status(500).json({ status: `Error http get: /transaction/getbyaccount, unable to get all transactions with account [${req.params.accountCode}]`, error });
+      }
+    })
+
+    this.app.get('/playbook/getall', async (req, res) => {
+      try {
+        let results: PlaybookWithEntryCount[] = await this.database.getAllPlaybooksWithEntryCount();
+        res.json(results)
+      } catch (error) {
+        this.log.error(`Error http get: /playbook/getall, unable to get all playbooks: ${error}`);
+        res.status(500).json({ status: "Error http get: /playbook/getall, unable to get all playbooks", error });
+      }
+    })
+
+    this.app.get('/playbook/get/:id', async (req, res) => {
+      try {
+        let id = Number(req.params.id);
+        this.log.info(`Recieved command: /playbook/get/:id [${id}]`);
+        let playbook = await this.database.getPlaybookById(id);
+        if (!playbook) {
+          res.status(404).json({ status: 'Playbook not found', id });
+          return;
+        }
+        let entries: PlaybookEntry[] = await this.database.getPlaybookEntries(id);
+        res.json({ playbook, entries })
+      } catch (error) {
+        this.log.error(`Error http get: /playbook/get/:id, unable to get playbook: ${error}`);
+        res.status(500).json({ status: "Error http get: /playbook/get/:id, unable to get playbook", error });
       }
     })
 

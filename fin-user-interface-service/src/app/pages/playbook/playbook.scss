@@ -1,0 +1,57 @@
+.multiButton {
+    display: flex;
+}
+
+/* Fixed height so both tables fit on screen; aligned with global pageDataDisplayTableDiv */
+.playbooksTableDiv {
+    height: 38vh;
+    overflow-y: auto;
+}
+
+.selectedPlaybookSection {
+    margin-top: 0.75em;
+}
+
+/* Line up with tables like ledger's tableOptions */
+.entriesSectionHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+    width: calc(100vw - 20rem);
+    left: 10rem;
+    margin-bottom: 0.5em;
+    margin-top: 3em;
+}
+
+.entriesSectionHeader h3 {
+    margin: 0;
+    font-size: medium;
+}
+
+.entriesTableDiv {
+    height: 38vh;
+    overflow-y: auto;
+    top: 0rem;
+}
+
+#entriesManualInput{
+    top: .25em;
+}
+
+.linkButton {
+    background: none;
+    border: none;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: inherit;
+}
+
+tr.selected {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+tr[role="button"] {
+    cursor: pointer;
+}
