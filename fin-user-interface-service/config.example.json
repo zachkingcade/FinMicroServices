@@ -1,0 +1,10 @@
+{
+  "devServer": {
+    "port": 4200,
+    "host": "localhost"
+  },
+  "loggerServer": {
+    "port": 3003,
+    "host": "0.0.0.0"
+  }
+}

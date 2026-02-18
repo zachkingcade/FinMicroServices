@@ -13,6 +13,7 @@ export class DatabaseHandler {
     connectedStatus: boolean = false;
     db!: sqlite3.Database;
     log: Logger;
+    private accountsServiceBaseUrl: string = 'http://localhost:3001';
 
     //stored queries
     selectTransactionsAll: string = "SELECT * FROM ledger_transactions order by trans_date;";
@@ -32,11 +33,14 @@ export class DatabaseHandler {
     }
     /**
      * Startups database handler. Connects to the database and creates tables if their not already there.
-     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data. 
+     * @param databasePath optional path to the SQLite database file; defaults to ./TransactionsServiceDatabase.db
+     * @param accountsServiceUrl optional base URL for the accounts service; used for validateAccount; defaults to http://localhost:3001
+     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data.
      */
-    async startup(): Promise<void> {
+    async startup(databasePath: string = './TransactionsServiceDatabase.db', accountsServiceUrl: string = 'http://localhost:3001'): Promise<void> {
+        this.accountsServiceBaseUrl = accountsServiceUrl.replace(/\/$/, '');
         await new Promise<void>((resolve, reject) => {
-            this.db = new sqlite3.Database('./TransactionsServiceDatabase.db', async err => {
+            this.db = new sqlite3.Database(databasePath, async err => {
                 if (err) {
                     this.log.error(`Error opening database: [${err.message}]`);
                     reject(err);
@@ -269,7 +273,7 @@ export class DatabaseHandler {
 
     async validateAccount(account_code: number): Promise<boolean> {
         try {
-            let response: Response = await fetch(`http://localhost:3001/account/getbyid/${account_code}`, {
+            let response: Response = await fetch(`${this.accountsServiceBaseUrl}/account/getbyid/${account_code}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

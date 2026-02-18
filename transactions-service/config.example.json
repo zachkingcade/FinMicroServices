@@ -1,0 +1,6 @@
+{
+  "port": 3002,
+  "host": "0.0.0.0",
+  "databasePath": "./TransactionsServiceDatabase.db",
+  "accountsServiceUrl": "http://localhost:3001"
+}

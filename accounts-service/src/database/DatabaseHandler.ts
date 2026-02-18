@@ -44,11 +44,12 @@ export class DatabaseHandler {
 
     /**
      * Startups database handler. Connects to the database and creates tables if their not already there.
-     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data. 
+     * @param databasePath optional path to the SQLite database file; defaults to ./AccountsServiceDatabase.db
+     * @returns a promise that returns nothing. It resolves when the operation is done but returns no data.
      */
-    async startup(): Promise<void> {
+    async startup(databasePath: string = './AccountsServiceDatabase.db'): Promise<void> {
         await new Promise<void>((resolve, reject) => {
-            this.db = new sqlite3.Database('./AccountsServiceDatabase.db', async err => {
+            this.db = new sqlite3.Database(databasePath, async err => {
                 if (err) {
                     this.log.error(`Error opening database: ${err.message}`)
                     reject(err);
@@ -312,7 +313,7 @@ export class DatabaseHandler {
         // Construct insert statement
         let newInsertStatement: string = "";
         newInsertStatement += "INSERT INTO account_types ";
-        newInsertStatement += `(type_description,type_class,type_active,${notes ? ",notes) " : ") "}`;
+        newInsertStatement += `(type_description,type_class,type_active${notes ? ",notes) " : ") "}`;
         newInsertStatement += `VALUES ("${typeDescription}","${typeClass}","Y"${notes ? `,"${notes}"` : ""});`;
 
         await new Promise<void>((resolve, reject) => {

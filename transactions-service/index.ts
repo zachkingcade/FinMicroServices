@@ -1,6 +1,6 @@
-import { ExpressHandler } from "./src/http/ExpressHandler";
-import { WLog } from "./src/WLog";
-
+import { ExpressHandler } from "./src/http/ExpressHandler.js";
+import { WLog } from "./src/WLog.js";
+import { loadConfig } from "./src/config.js";
 
 async function main() {
     const startupStartTime = performance.now();
@@ -9,7 +9,10 @@ async function main() {
     log.info("Logger instance obtained");
     log.info("Starting....");
 
-    let express = await ExpressHandler.getInstance();
+    const { config, found } = loadConfig();
+    if (!found) log.warn("Config file not found or unreadable; using defaults.");
+    else log.info("Config file found and read successfully : " + JSON.stringify(config));
+    let express = await ExpressHandler.getInstance(config);
     log.info("Express Handler started");
 
     let headerString: string = "";

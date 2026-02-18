@@ -5,15 +5,18 @@ db-backups/
 accounts-service/node_modules/
 accounts-service/dist/
 accounts-service/AccountsServiceDatabase.db
+accounts-service/config.json
 accounts-service/logs/
 
 # Transaction Service
 transactions-service/node_modules/
 transactions-service/dist/
 transactions-service/TransactionsServiceDatabase.db
+transactions-service/config.json
 transactions-service/logs/
 
 # Fin User Interface Service
+fin-user-interface-service/config.json
 fin-user-interface-service/dist
 fin-user-interface-service/tmp
 fin-user-interface-service/out-tsc

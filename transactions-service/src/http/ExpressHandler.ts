@@ -1,5 +1,6 @@
 import express from 'express'
 import { WLog } from '../WLog.js'
+import type { TransactionsServiceConfig } from '../config.js'
 import { Logger } from 'winston'
 import { Account, AccountDTO } from '../types/Account.js'
 import { DatabaseHandler } from '../database/DatabaseHandler.js'
@@ -25,9 +26,10 @@ export class ExpressHandler {
 
   /**
    * Gets the singleton instance if it exists and creates it if it does not
-   * @returns singeton instance
+   * @param config port, host, databasePath, accountsServiceUrl; defaults used if missing
+   * @returns singleton instance
    */
-  static async getInstance(): Promise<ExpressHandler> {
+  static async getInstance(config: TransactionsServiceConfig): Promise<ExpressHandler> {
     if (this.instance) {
       return this.instance
     }
@@ -37,22 +39,23 @@ export class ExpressHandler {
     newInstance.log.info("Creating new ExpressHandler instance!");
 
     newInstance.app.use(express.json())
-    newInstance.database = await new DatabaseHandler();
-    newInstance.accountService = new AccountService();
-    await newInstance.database.startup()
+    newInstance.database = new DatabaseHandler();
+    newInstance.accountService = new AccountService(config.accountsServiceUrl);
+    await newInstance.database.startup(config.databasePath, config.accountsServiceUrl)
     newInstance.setupPosts()
     newInstance.setupGets()
 
-    const PORT = 3002
+    const port = config.port
+    const host = config.host
 
     await new Promise<void>((resolve, reject) => {
-      newInstance.app.listen(PORT, () => {
+      newInstance.app.listen(port, host, () => {
         try {
-          newInstance.log.info(`AccountService running on port [${PORT}]`)
+          newInstance.log.info(`TransactionService running on ${host}:${port}`)
           resolve()
         } catch (err) {
           newInstance.log.error(
-            `Unable to establish listener on port [${PORT}]: [${err}]`
+            `Unable to establish listener on ${host}:${port}: [${err}]`
           )
           reject()
         }

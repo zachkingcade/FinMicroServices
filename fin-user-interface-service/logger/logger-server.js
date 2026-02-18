@@ -6,9 +6,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createLogger, format, Logger, transports } from 'winston'
 import 'winston-daily-rotate-file';
+import { getConfig } from '../config.js';
 
 const app = express();
-const PORT = 3003; // Node logger port
+const { loggerServer } = getConfig();
+const PORT = loggerServer.port;
+const HOST = loggerServer.host;
 
 // Make sure logs folder exists
 const __filename = fileURLToPath(import.meta.url);
@@ -75,6 +78,6 @@ app.post('/logs', (req, res) => {
   res.sendStatus(204);
 });
 
-app.listen(PORT, () => {
-  console.log(`Logger server listening on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Logger server listening on http://${HOST}:${PORT}`);
 });
